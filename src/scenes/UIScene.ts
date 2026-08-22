@@ -645,43 +645,54 @@ export class UIScene extends Phaser.Scene {
       }
     }, 24);
 
-    // CHALLENGE ! Button (Matches Image 1 top-center & Image 2)
+    // CHALLENGE ! Button (Only show if the current node triggers a challenge)
     challengeBtnContainer.innerHTML = '';
-    const challengeBtn = document.createElement('button');
-    challengeBtn.id = 'vn-challenge-trigger-btn';
-    challengeBtn.className = 'challenge-trigger-pulse';
-    challengeBtn.style.cssText = `
-      background: #dc2626;
-      border: 3px solid #fecaca;
-      border-radius: 4px;
-      color: #ffffff;
-      font-family: var(--font-pixel);
-      font-size: 11px;
-      font-weight: bold;
-      padding: 10px 18px;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.6);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      letter-spacing: 1px;
-    `;
-    challengeBtn.innerHTML = `<span>CHALLENGE</span><span style="color:#fef08a;">!</span>`;
+    if (node.triggerChallengeId) {
+      const challengeBtn = document.createElement('button');
+      challengeBtn.id = 'vn-challenge-trigger-btn';
+      challengeBtn.className = 'challenge-trigger-pulse';
+      challengeBtn.style.cssText = `
+        background: #dc2626;
+        border: 3px solid #fecaca;
+        border-radius: 4px;
+        color: #ffffff;
+        font-family: var(--font-pixel);
+        font-size: 11px;
+        font-weight: bold;
+        padding: 10px 18px;
+        cursor: pointer;
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.6);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        letter-spacing: 1px;
+      `;
+      challengeBtn.innerHTML = `<span>CHALLENGE</span><span style="color:#fef08a;">!</span>`;
 
-    challengeBtn.addEventListener('click', () => {
-      (window as any).audioService?.playSelect?.();
-      const charId = speaker.toLowerCase().includes('fatima') ? 'fatima' :
-                     speaker.toLowerCase().includes('rahul') ? 'rahul' :
-                     speaker.toLowerCase().includes('grandma') ? 'grandma' : 'fatima';
-      const difficulty = gameStateManager.getState().currentDifficulty;
-      const challenge = challengeManager.getNextChallenge(charId, difficulty);
-      if (challenge) {
-        this.hideDialogue();
-        this.openChallengePanel(challenge);
-      }
-    });
+      challengeBtn.addEventListener('click', () => {
+        (window as any).audioService?.playSelect?.();
+        const charId = speaker.toLowerCase().includes('fatima') ? 'fatima' :
+                       speaker.toLowerCase().includes('rahul') ? 'rahul' :
+                       speaker.toLowerCase().includes('grandma') ? 'grandma' :
+                       speaker.toLowerCase().includes('kofi') ? 'kofi' :
+                       speaker.toLowerCase().includes('elena') ? 'elena' :
+                       speaker.toLowerCase().includes('yuki') ? 'yuki' : 'fatima';
+        const difficulty = gameStateManager.getState().currentDifficulty;
+        const challenge = challengeManager.getNextChallenge(charId, difficulty);
+        if (challenge) {
+          this.hideDialogue();
+          this.openChallengePanel(challenge);
+        }
+      });
 
-    challengeBtnContainer.appendChild(challengeBtn);
+      challengeBtnContainer.appendChild(challengeBtn);
+    }
+
+    // Toggle bouncing down arrow visibility based on whether there's a next dialogue node
+    const arrow = this.dialoguePanel.querySelector('.bouncing-arrow') as HTMLElement;
+    if (arrow) {
+      arrow.style.display = node.nextId ? 'block' : 'none';
+    }
 
     // Slide up with GSAP
     gsap.fromTo(this.dialoguePanel,
