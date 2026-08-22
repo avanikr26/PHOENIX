@@ -414,6 +414,7 @@ export class UIScene extends Phaser.Scene {
       z-index: 50;
       font-family: Inter, system-ui, sans-serif;
       color: #f8fafc;
+      pointer-events: auto;
     `;
 
     menu.innerHTML = `
