@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import gsap from 'gsap';
 import { dialogueManager } from '../gameplay/DialogueManager';
 import { gameStateManager } from '../core/GameStateManager';
 import { eventBus, GameEvents } from '../core/EventBus';
