@@ -1,5 +1,6 @@
 import { GameState, DifficultyLevel, AccessibilityCategory } from '../types/game';
 import { eventBus, GameEvents } from './EventBus';
+import { challengeRegistry } from '../data/ChallengeRegistry';
 import localforage from 'localforage';
 
 // Configure localforage store
@@ -65,6 +66,15 @@ export class GameStateManager {
       unlockedLocations: ['medicity'],
       unlockedBadgeIds: [],
       purchasedToolIds: [],
+      websiteImprovements: {
+        semanticLabels: false,
+        captions: false,
+        colorIndependentIndicators: false,
+        largerTargets: false,
+        simplifiedLayout: false,
+        readableTypography: false,
+        keyboardAlternative: false,
+      },
       isGameComplete: false,
     };
   }
@@ -122,6 +132,32 @@ export class GameStateManager {
     this.state.totalScore += earnedPoints;
     this.state.totalXp += earnedPoints * 2;
     this.state.skills[category] = Math.min(100, (this.state.skills[category] || 0) + 25);
+
+    // Apply persistent website transformation status
+    const challenge = challengeRegistry.getById(challengeId);
+    if (challenge && challenge.transformation) {
+      this.state.websiteImprovements[challenge.transformation.type] = true;
+    }
+
+    // Check progression
+    const allChallenges = challengeRegistry.getAll();
+    if (allChallenges.length > 0) {
+      const easyChals = allChallenges.filter(c => c.difficulty === 'easy');
+      const medChals = allChallenges.filter(c => c.difficulty === 'medium');
+      const hardChals = allChallenges.filter(c => c.difficulty === 'hard');
+
+      const allEasyDone = easyChals.length > 0 && easyChals.every(c => this.state.completedChallengeIds.includes(c.id));
+      const allMedDone = medChals.length > 0 && medChals.every(c => this.state.completedChallengeIds.includes(c.id));
+      const allHardDone = hardChals.length > 0 && hardChals.every(c => this.state.completedChallengeIds.includes(c.id));
+
+      if (this.state.currentDifficulty === 'easy' && allEasyDone) {
+        this.state.currentDifficulty = 'medium';
+      } else if (this.state.currentDifficulty === 'medium' && allMedDone) {
+        this.state.currentDifficulty = 'hard';
+      } else if (this.state.currentDifficulty === 'hard' && allHardDone) {
+        this.state.isGameComplete = true;
+      }
+    }
 
     this.notifyStateUpdate();
   }

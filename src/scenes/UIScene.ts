@@ -736,11 +736,9 @@ export class UIScene extends Phaser.Scene {
 
     const charName = this.getCharDisplayName(challenge.characterId);
     const difficultyStr = challenge.difficulty.charAt(0).toUpperCase() + challenge.difficulty.slice(1);
-
     this.challengeSecondsLeft = 28;
 
     this.challengePanel.innerHTML = `
-      <!-- Main Scenario Card (Light lavender background, matching Image 1 top-right) -->
       <div style="
         background: #f1f3f9;
         color: #1e293b;
@@ -789,16 +787,16 @@ export class UIScene extends Phaser.Scene {
           <div>
             <div style="font-family: var(--font-pixel); font-size: 9px; font-weight: bold; color: #475569; margin-bottom: 4px;">Scenario</div>
             <div style="font-family: var(--font-body); font-size: 15px; color: #1e293b; font-weight: 600;">
-              ${challenge.scenario || "Redesign the bus schedule screen to make it easier for Fatima to understand."}
+              ${challenge.scenario}
             </div>
           </div>
 
-          <!-- Middle Split: Side-by-side comparison + Improvement Checklist -->
+          <!-- Middle Split: Graphics comparison + MCQ Choices -->
           <div style="display: flex; gap: 16px; align-items: stretch;">
             
-            <!-- Left: Side-by-Side Current Screen vs Your Design -->
+            <!-- Left: Graphic representation -->
             <div style="
-              flex: 1.4;
+              flex: 1.2;
               display: flex;
               align-items: center;
               justify-content: space-between;
@@ -808,68 +806,23 @@ export class UIScene extends Phaser.Scene {
               padding: 12px;
               gap: 10px;
             ">
-              <!-- Current Screen (Inaccessible) -->
+              <!-- Before state -->
               <div style="flex: 1; text-align: center;">
                 <div style="font-size: 11px; font-weight: bold; color: #64748b; margin-bottom: 6px;">Current Screen</div>
-                <div style="
-                  background: #f8fafc;
-                  border: 1px solid #94a3b8;
-                  border-radius: 4px;
-                  overflow: hidden;
-                  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-                ">
-                  <div style="background:#2563eb; color:#ffffff; font-size:10px; font-weight:bold; padding:4px;">BMTC</div>
-                  <div style="padding:6px; font-size:8px; line-height:1.4; color:#334155; text-align:left;">
-                    <div style="font-weight:bold; border-bottom:1px solid #e2e8f0; padding-bottom:2px;">501E &nbsp; Majestic &nbsp; HSR Layout</div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:2px; font-size:7.5px; margin-top:4px; color:#475569;">
-                      <div>07:10 AM</div><div>08:25 AM</div>
-                      <div>07:35 AM</div><div>08:50 AM</div>
-                      <div>08:00 AM</div><div>09:15 AM</div>
-                    </div>
-                  </div>
-                </div>
+                ${this.renderBeforeAfterGfx(challenge.category, challenge.characterId, false)}
               </div>
 
               <!-- Arrow -->
               <div style="font-size: 20px; color: #3b82f6; font-weight: bold;">→</div>
 
-              <!-- Your Design (Clean & Accessible) -->
-              <div style="flex: 1.2; text-align: center;">
-                <div style="font-size: 11px; font-weight: bold; color: #047857; margin-bottom: 6px;">Your Design</div>
-                <div style="
-                  background: #fefce8;
-                  border: 2px solid #ca8a04;
-                  border-radius: 4px;
-                  overflow: hidden;
-                  box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-                  text-align: left;
-                  padding: 8px;
-                ">
-                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #fde047; padding-bottom:4px;">
-                    <div style="font-weight:bold; font-size:11px; color:#854d0e;">501E <span style="font-size:9px; font-weight:normal; color:#713f12;">Majestic → HSR Layout</span></div>
-                    <div style="font-size:10px; color:#854d0e;">&rsaquo;</div>
-                  </div>
-                  <div style="font-size:8px; font-weight:bold; color:#713f12; margin-top:4px;">Next Buses</div>
-                  <div style="font-size:8.5px; line-height:1.6; margin-top:2px;">
-                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #fef08a; padding:2px 0;">
-                      <span style="font-weight:bold; color:#1e293b;">07:10 AM</span>
-                      <span style="background:#bbf7d0; color:#14532d; padding:0 4px; border-radius:2px; font-weight:bold;">8 min</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #fef08a; padding:2px 0;">
-                      <span style="font-weight:bold; color:#1e293b;">07:35 AM</span>
-                      <span style="color:#64748b;">33 min</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; padding:2px 0;">
-                      <span style="font-weight:bold; color:#1e293b;">08:00 AM</span>
-                      <span style="color:#64748b;">58 min</span>
-                    </div>
-                  </div>
-                  <div style="text-align:center; font-size:7.5px; color:#ca8a04; margin-top:2px; font-weight:bold;">Show more ∨</div>
-                </div>
+              <!-- After state -->
+              <div style="flex: 1.1; text-align: center;">
+                <div style="font-size: 11px; font-weight: bold; color: #047857; margin-bottom: 6px;">Target Design</div>
+                ${this.renderBeforeAfterGfx(challenge.category, challenge.characterId, true)}
               </div>
             </div>
 
-            <!-- Right: Checklist Multi-Select (Matches Image 1) -->
+            <!-- Right: MCQ Choices -->
             <div style="
               flex: 1;
               background: #ffffff;
@@ -882,32 +835,56 @@ export class UIScene extends Phaser.Scene {
             ">
               <div>
                 <div style="font-family: var(--font-pixel); font-size: 8px; font-weight: bold; color: #1e293b; margin-bottom: 2px;">
-                  What did you improve?
+                  What should you improve?
                 </div>
-                <div style="font-size: 11px; color: #64748b; margin-bottom: 8px;">Select all that apply.</div>
+                <div style="font-size: 11px; color: #64748b; margin-bottom: 8px;">Select the best design choice.</div>
 
-                <div id="challenge-checklist" style="display:flex; flex-direction:column; gap:6px;">
-                  <label class="check-item" style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; cursor:pointer;">
-                    <input type="checkbox" checked style="accent-color:#5b21b6; width:16px; height:16px; cursor:pointer;" />
-                    <span>Clarity</span>
-                  </label>
-                  <label class="check-item" style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; cursor:pointer;">
-                    <input type="checkbox" checked style="accent-color:#5b21b6; width:16px; height:16px; cursor:pointer;" />
-                    <span>Readability</span>
-                  </label>
-                  <label class="check-item" style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; cursor:pointer;">
-                    <input type="checkbox" checked style="accent-color:#5b21b6; width:16px; height:16px; cursor:pointer;" />
-                    <span>Information Hierarchy</span>
-                  </label>
-                  <label class="check-item" style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; cursor:pointer;">
-                    <input type="checkbox" style="accent-color:#5b21b6; width:16px; height:16px; cursor:pointer;" />
-                    <span>Consistency</span>
-                  </label>
-                  <label class="check-item" style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; cursor:pointer;">
-                    <input type="checkbox" checked style="accent-color:#5b21b6; width:16px; height:16px; cursor:pointer;" />
-                    <span>Accessibility</span>
-                  </label>
+                <div id="choices-container" style="display:flex; flex-direction:column; gap:8px;">
+                  ${challenge.options.map(opt => `
+                    <div class="choice-card" data-opt-id="${opt.id}" style="
+                      background: #ffffff;
+                      border: 2px solid #cbd5e1;
+                      border-radius: 6px;
+                      padding: 10px 14px;
+                      font-family: var(--font-body);
+                      font-size: 13px;
+                      font-weight: 500;
+                      cursor: pointer;
+                      display: flex;
+                      align-items: center;
+                      gap: 10px;
+                      transition: all 0.2s;
+                    ">
+                      <div style="
+                        width: 22px;
+                        height: 22px;
+                        border-radius: 50%;
+                        background: #e2e8f0;
+                        color: #475569;
+                        font-family: var(--font-pixel);
+                        font-size: 10px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        flex-shrink: 0;
+                      ">${opt.id.toUpperCase()}</div>
+                      <div style="flex:1; color:#1e293b; line-height: 1.3;">${opt.label}</div>
+                    </div>
+                  `).join('')}
                 </div>
+                
+                <div id="select-error-banner" style="
+                  display: none;
+                  background: #fef2f2;
+                  border: 1px solid #fca5a5;
+                  border-radius: 4px;
+                  padding: 8px;
+                  color: #b91c1c;
+                  font-size: 11px;
+                  margin-top: 10px;
+                  font-weight: 500;
+                "></div>
               </div>
 
               <!-- Submit Button -->
@@ -918,18 +895,18 @@ export class UIScene extends Phaser.Scene {
                   color: #ffffff;
                   border: none;
                   border-radius: 4px;
-                  padding: 8px;
+                  padding: 10px;
                   font-family: var(--font-pixel);
                   font-size: 9px;
                   cursor: pointer;
                   box-shadow: 0 4px 8px rgba(91, 33, 182, 0.4);
                   transition: transform 0.1s;
-                ">Submit</button>
+                ">Submit Decision</button>
               </div>
             </div>
           </div>
 
-          <!-- Bottom Tip Box (Matches Image 1) -->
+          <!-- Bottom Question Label -->
           <div style="
             background: #ede9fe;
             border: 1px solid #c4b5fd;
@@ -941,8 +918,8 @@ export class UIScene extends Phaser.Scene {
             align-items: center;
             gap: 8px;
           ">
-            <span>💡</span>
-            <span><strong>Tip:</strong> Think about clarity, simplicity and quick comprehension.</span>
+            <span>❓</span>
+            <span><strong>Question:</strong> ${challenge.question}</span>
           </div>
 
         </div>
@@ -951,15 +928,60 @@ export class UIScene extends Phaser.Scene {
 
     this.overlay.appendChild(this.challengePanel);
 
+    // Option Selection Logic
+    let selectedOptionId = "";
+    const cards = this.challengePanel.querySelectorAll('.choice-card');
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        (window as any).audioService?.playSelect?.();
+        cards.forEach(c => {
+          (c as HTMLElement).style.border = '2px solid #cbd5e1';
+          (c as HTMLElement).style.background = '#ffffff';
+          const badge = c.querySelector('div') as HTMLElement;
+          badge.style.background = '#e2e8f0';
+          badge.style.color = '#475569';
+        });
+
+        selectedOptionId = (card as HTMLElement).dataset.optId || "";
+        (card as HTMLElement).style.border = '3px solid #5b21b6';
+        (card as HTMLElement).style.background = '#f5f3ff';
+        const activeBadge = card.querySelector('div') as HTMLElement;
+        activeBadge.style.background = '#5b21b6';
+        activeBadge.style.color = '#ffffff';
+        
+        // Hide error banner if showing
+        const banner = document.getElementById('select-error-banner');
+        if (banner) banner.style.display = 'none';
+      });
+    });
+
     // Timer logic
     this.startChallengeTimer();
 
     // Wire submit
     this.challengePanel.querySelector('#btn-submit-scenario')?.addEventListener('click', () => {
-      (window as any).audioService?.playSelect?.();
+      if (!selectedOptionId) {
+        const banner = document.getElementById('select-error-banner');
+        if (banner) {
+          banner.style.display = 'block';
+          banner.textContent = '⚠️ Please select a design option first!';
+        }
+        (window as any).audioService?.playGlitch?.();
+        return;
+      }
+
+      const selectedOption = challenge.options.find(o => o.id === selectedOptionId);
       this.stopTimer();
-      this.clearChallenge();
-      this.showTransformationModal(challenge);
+
+      if (selectedOption && selectedOption.isCorrect) {
+        this.clearChallenge();
+        (window as any).audioService?.playCorrect?.();
+        this.showTransformationModal(challenge);
+      } else {
+        this.clearChallenge();
+        (window as any).audioService?.playGlitch?.();
+        this.showIncorrectFeedback(challenge, selectedOption);
+      }
     });
 
     // Animate in with GSAP
@@ -967,6 +989,82 @@ export class UIScene extends Phaser.Scene {
       { scale: 0.94, opacity: 0, y: 20 },
       { scale: 1, opacity: 1, y: 0, duration: 0.4, ease: 'expo.out' }
     );
+  }
+
+  private renderBeforeAfterGfx(category: string, characterId: string, isAfter: boolean): string {
+    if (category === 'auditory') {
+      if (!isAfter) {
+        return `
+          <div style="background:#1e293b; border:1px solid #475569; border-radius:4px; padding:12px; font-size:11px; text-align:center; color:#94a3b8; width: 100%; height:90px; display:flex; flex-direction:column; justify-content:center; align-items:center;">
+            <div style="font-weight:bold; margin-bottom:4px; color:#ef4444; font-size:9px;">No Subtitles</div>
+            <div style="font-size:20px; margin-bottom:4px;">🗣️🔇</div>
+            <div style="font-size:7.5px;">Video playing with muffled voice</div>
+          </div>
+        `;
+      } else {
+        return `
+          <div style="background:#0f172a; border:2px solid #22c55e; border-radius:4px; padding:8px; font-size:11px; text-align:center; color:#f8fafc; width: 100%; height:90px; display:flex; flex-direction:column; justify-content:center; align-items:center; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:4px; color:#22c55e; font-size:9px;">Captions ON</div>
+            <div style="font-size:20px; margin-bottom:4px;">🗣️🔊</div>
+            <div style="background:rgba(0,0,0,0.6); padding:2px 4px; border-radius:2px; font-size:8px; color:#facc15; line-height:1.2; width:95%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              [Grandma: "Book doctor for 4 PM"]
+            </div>
+          </div>
+        `;
+      }
+    } else if (characterId === 'grandma') {
+      // Color barrier
+      if (!isAfter) {
+        return `
+          <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; padding:10px; font-size:11px; text-align:left; width: 100%; height:90px; display:flex; flex-direction:column; justify-content:center; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:6px; color:#ef4444; font-size:8.5px; text-align:center;">Color Only States</div>
+            <div style="display:flex; gap:6px; align-items:center; margin-bottom:4px;">
+              <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#22c55e; flex-shrink:0;"></span>
+              <span style="font-size:8px; color:#94a3b8;">Green Dot Only</span>
+            </div>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:#ef4444; flex-shrink:0;"></span>
+              <span style="font-size:8px; color:#94a3b8;">Red Dot Only</span>
+            </div>
+          </div>
+        `;
+      } else {
+        return `
+          <div style="background:#f0fdf4; border:1.5px solid #22c55e; border-radius:4px; padding:10px; font-size:11px; text-align:left; width: 100%; height:90px; display:flex; flex-direction:column; justify-content:center; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:6px; color:#15803d; font-size:8.5px; text-align:center;">Icons & Text</div>
+            <div style="display:flex; gap:6px; align-items:center; margin-bottom:4px;">
+              <span style="display:flex; align-items:center; justify-content:center; width:12px; height:12px; border-radius:50%; background:#22c55e; color:#fff; font-size:7px; font-weight:bold; flex-shrink:0;">✓</span>
+              <span style="font-size:9px; font-weight:bold; color:#166534;">Available</span>
+            </div>
+            <div style="display:flex; gap:6px; align-items:center;">
+              <span style="display:flex; align-items:center; justify-content:center; width:12px; height:12px; border-radius:50%; background:#ef4444; color:#fff; font-size:7px; font-weight:bold; flex-shrink:0;">✕</span>
+              <span style="font-size:9px; font-weight:bold; color:#991b1b;">Unavailable</span>
+            </div>
+          </div>
+        `;
+      }
+    } else {
+      // Screen reader/Visual/unlabeled input
+      if (!isAfter) {
+        return `
+          <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; padding:8px 10px; font-size:11px; text-align:left; width: 100%; height:90px; display:flex; flex-direction:column; justify-content:center; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:4px; color:#ef4444; font-size:9px; text-align:center;">Unlabeled Fields</div>
+            <input type="text" placeholder=" " disabled style="width:100%; border:1px solid #cbd5e1; border-radius:3px; padding:4px; margin-bottom:4px; height:16px; background:#fafafa;"/>
+            <input type="text" placeholder=" " disabled style="width:100%; border:1px solid #cbd5e1; border-radius:3px; padding:4px; height:16px; background:#fafafa;"/>
+          </div>
+        `;
+      } else {
+        return `
+          <div style="background:#f0fdf4; border:1.5px solid #22c55e; border-radius:4px; padding:8px 10px; font-size:11px; text-align:left; width: 100%; height:90px; display:flex; flex-direction:column; justify-content:center; box-sizing:border-box;">
+            <div style="font-weight:bold; margin-bottom:2px; color:#15803d; font-size:9px; text-align:center;">Accessible labels</div>
+            <label style="display:block; font-size:7px; font-weight:bold; color:#15803d; margin-bottom:1px;">Name</label>
+            <input type="text" value="John Doe" disabled style="width:100%; border:1px solid #86efac; border-radius:3px; padding:2px 4px; background:#fff; height:14px; color:#1e293b; font-size:8px;"/>
+            <label style="display:block; font-size:7px; font-weight:bold; color:#15803d; margin-bottom:1px; margin-top:2px;">Email</label>
+            <input type="text" value="john@email.com" disabled style="width:100%; border:1px solid #86efac; border-radius:3px; padding:2px 4px; background:#fff; height:14px; color:#1e293b; font-size:8px;"/>
+          </div>
+        `;
+      }
+    }
   }
 
   private startChallengeTimer() {
@@ -979,7 +1077,9 @@ export class UIScene extends Phaser.Scene {
       }
       if (this.challengeSecondsLeft <= 0) {
         this.stopTimer();
-        this.showIncorrectFeedback();
+        this.clearChallenge();
+        (window as any).audioService?.playGlitch?.();
+        this.showIncorrectFeedback(this.currentChallenge!, null);
       }
     }, 1000);
   }
@@ -999,9 +1099,6 @@ export class UIScene extends Phaser.Scene {
 
   // ─── Feedback Modals (Image 1 Middle Row) ─────────────────────────────────
 
-  /**
-   * 1. Interface Transformation Modal (BEFORE -> AFTER)
-   */
   private showTransformationModal(challenge: Challenge) {
     this.clearFeedback();
 
@@ -1031,36 +1128,22 @@ export class UIScene extends Phaser.Scene {
         box-shadow: 0 20px 40px rgba(0,0,0,0.8);
       ">
         <div style="font-family: var(--font-pixel); font-size: 11px; color: #1e293b; text-align: center; margin-bottom: 16px;">
-          INTERFACE TRANSFORMATION (VISUAL CHANGE)
+          INTERFACE TRANSFORMATION APPLIED
         </div>
 
         <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px;">
           <!-- BEFORE -->
           <div style="flex:1; text-align:center;">
             <div style="font-size:10px; font-weight:bold; color:#64748b; margin-bottom:4px;">BEFORE</div>
-            <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; overflow:hidden;">
-              <div style="background:#2563eb; color:#fff; font-size:9px; padding:3px; font-weight:bold;">BMTC</div>
-              <div style="padding:8px; font-size:8px; color:#475569; line-height:1.4; text-align:left;">
-                <div style="font-weight:bold;">501E Majestic</div>
-                <div>07:10 AM | 07:35 AM</div>
-                <div>08:00 AM | 08:25 AM</div>
-              </div>
-            </div>
+            ${this.renderBeforeAfterGfx(challenge.category, challenge.characterId, false)}
           </div>
 
           <div style="font-size:24px; color:#2563eb; font-weight:bold;">→</div>
 
           <!-- AFTER -->
-          <div style="flex:1.2; text-align:center;">
-            <div style="font-size:10px; font-weight:bold; color:#047857; margin-bottom:4px;">AFTER (YOUR DESIGN APPLIED)</div>
-            <div style="background:#fefce8; border:2px solid #ca8a04; border-radius:4px; padding:8px; text-align:left;">
-              <div style="font-size:10px; font-weight:bold; color:#854d0e;">501E Majestic → HSR Layout</div>
-              <div style="font-size:8px; color:#713f12; margin-top:2px;">Next Buses:</div>
-              <div style="font-size:8.5px; margin-top:2px; font-weight:bold; color:#1e293b;">
-                <div>07:10 AM — <span style="color:#047857;">8 min</span></div>
-                <div>07:35 AM — <span style="color:#64748b;">33 min</span></div>
-              </div>
-            </div>
+          <div style="flex:1.1; text-align:center;">
+            <div style="font-size:10px; font-weight:bold; color:#047857; margin-bottom:4px;">AFTER</div>
+            ${this.renderBeforeAfterGfx(challenge.category, challenge.characterId, true)}
           </div>
         </div>
 
@@ -1087,14 +1170,11 @@ export class UIScene extends Phaser.Scene {
     });
   }
 
-  /**
-   * 2. Success Feedback (Fatima smiling portrait + Speech bubble + Points)
-   */
   private showSuccessFeedback(challenge: Challenge) {
     this.clearFeedback();
 
-    // Record score
-    gameStateManager.recordChallengeCompletion(challenge.id, challenge.category, 100, 100);
+    // Record challenge completion score
+    gameStateManager.recordChallengeCompletion(challenge.id, challenge.category, challenge.points, challenge.points);
 
     const modal = document.createElement('div');
     modal.className = 'feedback-overlay-modal';
@@ -1111,11 +1191,12 @@ export class UIScene extends Phaser.Scene {
       pointer-events: auto;
     `;
 
+    const sColor = this.getSpeakerColor(challenge.characterId);
+
     modal.innerHTML = `
-      <!-- Card matching SUCCESS FEEDBACK from Image 1 -->
       <div style="
         background: #fdfaf6;
-        border: 3px solid #d97706;
+        border: 3px solid ${sColor.border};
         border-radius: 8px;
         max-width: 580px;
         width: 100%;
@@ -1125,18 +1206,17 @@ export class UIScene extends Phaser.Scene {
         gap: 20px;
         box-shadow: 0 20px 40px rgba(0,0,0,0.8);
       ">
-        <!-- Smiling Portrait -->
+        <!-- Portrait -->
         <div style="flex-shrink:0;">
-          ${PortraitAssets.getFatimaSVG('happy', 140)}
+          ${this.getCharacterPortraitSVG(challenge.characterId, 'happy', 140)}
         </div>
 
-        <!-- Right: Speech bubble + Points -->
+        <!-- Speech bubble + Points -->
         <div style="flex:1; display:flex; flex-direction:column; gap:12px;">
-          <div style="font-family:var(--font-pixel); font-size:10px; color:#d97706; font-weight:bold;">
+          <div style="font-family:var(--font-pixel); font-size:10px; color:${sColor.border}; font-weight:bold;">
             SUCCESS FEEDBACK
           </div>
 
-          <!-- Speech bubble -->
           <div style="
             background: #ffffff;
             border: 2px solid #cbd5e1;
@@ -1148,9 +1228,8 @@ export class UIScene extends Phaser.Scene {
             line-height: 1.4;
             font-weight: 500;
             box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            position: relative;
           ">
-            "That's so much better! Now I can plan my travel confidently. Thank you!"
+            "Correct choice! ${challenge.explanation}"
           </div>
 
           <!-- Score Badge & Next Button -->
@@ -1161,10 +1240,10 @@ export class UIScene extends Phaser.Scene {
               gap:6px;
               font-family:var(--font-pixel);
               font-size:11px;
-              color:#d97706;
+              color:${sColor.border};
               font-weight:bold;
             ">
-              <span style="font-size:16px;">★</span> +100 Points
+              <span style="font-size:16px;">★</span> +${challenge.points} Points
             </div>
 
             <button id="btn-success-continue" style="
@@ -1187,14 +1266,11 @@ export class UIScene extends Phaser.Scene {
     modal.querySelector('#btn-success-continue')?.addEventListener('click', () => {
       (window as any).audioService?.playSelect?.();
       modal.remove();
-      this.showJoyousReactionModal();
+      this.showJoyousReactionModal(challenge);
     });
   }
 
-  /**
-   * 3. Joyous Reaction Modal (Fatima clasping hands)
-   */
-  private showJoyousReactionModal() {
+  private showJoyousReactionModal(challenge: Challenge) {
     this.clearFeedback();
 
     const modal = document.createElement('div');
@@ -1212,10 +1288,13 @@ export class UIScene extends Phaser.Scene {
       pointer-events: auto;
     `;
 
+    const sColor = this.getSpeakerColor(challenge.characterId);
+    const charName = this.getCharDisplayName(challenge.characterId);
+
     modal.innerHTML = `
       <div style="
         background: #fdfaf6;
-        border: 3px solid #7c3aed;
+        border: 3px solid ${sColor.border};
         border-radius: 8px;
         max-width: 580px;
         width: 100%;
@@ -1226,12 +1305,12 @@ export class UIScene extends Phaser.Scene {
         box-shadow: 0 20px 40px rgba(0,0,0,0.8);
       ">
         <div style="flex-shrink:0;">
-          ${PortraitAssets.getFatimaSVG('joyous', 140)}
+          ${this.getCharacterPortraitSVG(challenge.characterId, 'joyous', 140)}
         </div>
 
         <div style="flex:1; display:flex; flex-direction:column; gap:12px;">
-          <div style="font-family:var(--font-pixel); font-size:10px; color:#7c3aed; font-weight:bold;">
-            AFTER SUCCESS — CHARACTER REACTION
+          <div style="font-family:var(--font-pixel); font-size:10px; color:${sColor.border}; font-weight:bold;">
+            ${charName.toUpperCase()} REACTION
           </div>
 
           <div style="
@@ -1245,12 +1324,12 @@ export class UIScene extends Phaser.Scene {
             line-height: 1.4;
             font-weight: 500;
           ">
-            "This is so easy to understand now! I feel much more confident using this!"
+            "Thank you so much! It's amazing how much difference a proper design makes. I can navigate this site with complete independence now!"
           </div>
 
           <div style="text-align:right;">
             <button id="btn-joy-done" style="
-              background: #7c3aed;
+              background: ${sColor.border};
               color: #ffffff;
               border: none;
               border-radius: 4px;
@@ -1269,13 +1348,16 @@ export class UIScene extends Phaser.Scene {
     modal.querySelector('#btn-joy-done')?.addEventListener('click', () => {
       (window as any).audioService?.playSelect?.();
       modal.remove();
+      
+      // Update UI HUD points counter
+      this.updateHUDScore();
+      
+      this.hideDialogue();
+      dialogueManager.advance();
     });
   }
 
-  /**
-   * 4. Incorrect / Retry Modal (Matches Image 1 middle row)
-   */
-  private showIncorrectFeedback() {
+  private showIncorrectFeedback(challenge: Challenge, selectedOption: any | null) {
     this.clearFeedback();
 
     const modal = document.createElement('div');
@@ -1292,6 +1374,11 @@ export class UIScene extends Phaser.Scene {
       z-index: 40;
       pointer-events: auto;
     `;
+
+    const charName = this.getCharDisplayName(challenge.characterId);
+    const feedbackMsg = selectedOption 
+      ? selectedOption.feedback 
+      : "Time ran out! Try to think about the user's specific access barriers.";
 
     modal.innerHTML = `
       <div style="
@@ -1323,7 +1410,10 @@ export class UIScene extends Phaser.Scene {
         </div>
 
         <div style="font-family:var(--font-body); font-size:15px; color:#1e293b; font-weight:600; margin-bottom:16px;">
-          This design might still be confusing for Fatima.<br>Try again!
+          This design might still be confusing for ${charName}.<br>
+          <span style="font-size: 13px; font-weight:normal; color:#4b5563; display:block; margin-top:8px;">
+            ${feedbackMsg}
+          </span>
         </div>
 
         <div style="display:flex; gap:10px; justify-content:center;">
@@ -1357,21 +1447,17 @@ export class UIScene extends Phaser.Scene {
     modal.querySelector('#btn-retry-action')?.addEventListener('click', () => {
       (window as any).audioService?.playSelect?.();
       modal.remove();
-      if (this.currentChallenge) {
-        this.openChallengePanel(this.currentChallenge);
-      }
+      this.openChallengePanel(challenge);
     });
 
     modal.querySelector('#btn-retry-hint')?.addEventListener('click', () => {
+      (window as any).audioService?.playSelect?.();
       modal.remove();
-      this.showHintModal();
+      this.showHintModal(challenge);
     });
   }
 
-  /**
-   * 5. Hint Feedback Modal (Lightbulb 💡 icon)
-   */
-  private showHintModal() {
+  private showHintModal(challenge: Challenge) {
     this.clearFeedback();
 
     const modal = document.createElement('div');
@@ -1402,10 +1488,13 @@ export class UIScene extends Phaser.Scene {
       ">
         <div style="font-size:36px; margin-bottom:8px;">💡</div>
         <div style="font-family:var(--font-pixel); font-size:11px; color:#b45309; margin-bottom:8px;">
-          Good start!
+          WCAG Accessibility Principle
         </div>
         <div style="font-family:var(--font-body); font-size:15px; color:#1e293b; font-weight:600; margin-bottom:16px;">
-          Try improving the information hierarchy and readability.
+          Remember: ${challenge.accessibilityPrinciple || "Design should be perceivable, operable, understandable, and robust."}<br>
+          <span style="font-size: 13px; font-weight:normal; color:#78350f; display:block; margin-top:8px;">
+            Target Goal: ${challenge.question}
+          </span>
         </div>
         <button id="btn-hint-continue" style="
           background: #5b21b6;
@@ -1423,10 +1512,9 @@ export class UIScene extends Phaser.Scene {
     this.overlay.appendChild(modal);
 
     modal.querySelector('#btn-hint-continue')?.addEventListener('click', () => {
+      (window as any).audioService?.playSelect?.();
       modal.remove();
-      if (this.currentChallenge) {
-        this.openChallengePanel(this.currentChallenge);
-      }
+      this.openChallengePanel(challenge);
     });
   }
 
@@ -1481,6 +1569,19 @@ export class UIScene extends Phaser.Scene {
           </div>
         </div>
 
+        <button id="btn-view-evolution" style="
+          width: 100%;
+          background: #10b981;
+          color: #fff;
+          border: none;
+          border-radius: 4px;
+          padding: 10px;
+          margin-bottom: 8px;
+          font-family: var(--font-pixel);
+          font-size: 9px;
+          cursor: pointer;
+        ">🖥️ VIEW HEALTHCARE PORTAL EVOLUTION</button>
+
         <button id="btn-tasks-close" style="
           width: 100%;
           background: #3b82f6;
@@ -1496,7 +1597,197 @@ export class UIScene extends Phaser.Scene {
     `;
 
     this.overlay.appendChild(modal);
-    modal.querySelector('#btn-tasks-close')?.addEventListener('click', () => modal.remove());
+    
+    modal.querySelector('#btn-tasks-close')?.addEventListener('click', () => {
+      (window as any).audioService?.playSelect?.();
+      modal.remove();
+    });
+
+    modal.querySelector('#btn-view-evolution')?.addEventListener('click', () => {
+      (window as any).audioService?.playSelect?.();
+      modal.remove();
+      this.showWebsiteEvolutionModal();
+    });
+  }
+
+  private showWebsiteEvolutionModal() {
+    this.clearFeedback();
+    
+    const state = gameStateManager.getState();
+    const improvements = state.websiteImprovements || {};
+
+    const modal = document.createElement('div');
+    modal.className = 'feedback-overlay-modal';
+    modal.style.cssText = `
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 12, 22, 0.95);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 45;
+      pointer-events: auto;
+    `;
+
+    // Calculate accessibility percentage score
+    const totalImps = 4;
+    let activeImps = 0;
+    if (improvements.ariaLabels) activeImps++;
+    if (improvements.captions) activeImps++;
+    if (improvements.colorIndicators) activeImps++;
+    if (improvements.largerTargets) activeImps++;
+
+    const rating = Math.round((activeImps / totalImps) * 100);
+
+    modal.innerHTML = `
+      <div style="
+        background: #0f172a;
+        color: #f8fafc;
+        border: 3px solid #38bdf8;
+        border-radius: 8px;
+        max-width: 600px;
+        width: 100%;
+        padding: 24px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+        font-family: var(--font-body);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      ">
+        <div style="font-family:var(--font-pixel); font-size:11px; color:#38bdf8; display:flex; justify-content:space-between; border-bottom:1px solid #334155; padding-bottom:10px;">
+          <span>🖥️ CITYCARE PORTAL EVOLUTION</span>
+          <span style="color:#10b981;">A11Y RATING: ${rating}%</span>
+        </div>
+
+        <div style="font-size:12px; color:#94a3b8; line-height:1.4;">
+          Watch the medical booking portal transform as you correct accessibility barriers in Access City.
+        </div>
+
+        <!-- Simulated Website Preview Screen -->
+        <div style="
+          background: #ffffff;
+          border: 2px solid #cbd5e1;
+          border-radius: 6px;
+          padding: 16px;
+          color: #1e293b;
+          font-size: 13px;
+          transition: all 0.3s;
+          box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+          text-align: left;
+        ">
+          <!-- Banner -->
+          <div style="
+            background: #1e3a8a;
+            color: #ffffff;
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+          ">
+            <span>CityCare Hospital</span>
+            <span style="font-size: 9px; font-weight: normal;">
+              Subtitles: ${improvements.captions ? 'ON (CC)' : 'OFF'}
+            </span>
+          </div>
+
+          <!-- Labeled or Unlabeled Fields -->
+          ${improvements.ariaLabels 
+            ? `
+              <div style="margin-bottom: 10px;">
+                <label style="display:block; font-size:11px; font-weight:bold; color:#1e3a8a; margin-bottom:4px;">Date of Appointment *</label>
+                <div style="border:1px solid #cbd5e1; padding:8px; border-radius:4px; font-size:13px; color:#1e293b; background:#fff;">23 August 2026</div>
+              </div>
+              `
+            : `
+              <div style="margin-bottom: 10px;">
+                <div style="border:1px solid #cbd5e1; padding:4px; font-size:9px; color:#94a3b8; background:#f8fafc;">23 Aug 2026 (Date Field)</div>
+              </div>
+              `
+          }
+
+          <!-- Labeled or Unlabeled Time Selection -->
+          ${improvements.ariaLabels 
+            ? `
+              <div style="margin-bottom: 12px;">
+                <label style="display:block; font-size:11px; font-weight:bold; color:#1e3a8a; margin-bottom:4px;">Time Slot *</label>
+                <div style="border:1px solid #cbd5e1; padding:8px; border-radius:4px; font-size:13px; color:#1e293b; background:#fff;">04:00 PM</div>
+              </div>
+              `
+            : `
+              <div style="margin-bottom: 12px;">
+                <div style="border:1px solid #cbd5e1; padding:4px; font-size:9px; color:#94a3b8; background:#f8fafc;">04:00 PM (Time Field)</div>
+              </div>
+              `
+          }
+
+          <!-- Status Indicator -->
+          <div style="margin-bottom: 14px; display:flex; align-items:center; gap:8px;">
+            <span style="font-size:10px; font-weight:bold;">Status:</span>
+            ${improvements.colorIndicators 
+              ? `<span style="background:#bbf7d0; color:#14532d; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:bold; display:flex; align-items:center; gap:4px;">✓ Available</span>`
+              : `<span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#22c55e;" title="Green dot status"></span>`
+            }
+          </div>
+
+          <!-- Confirm button -->
+          <div>
+            <button style="
+              width: 100%;
+              background: #047857;
+              color: #ffffff;
+              border: none;
+              border-radius: 4px;
+              padding: ${improvements.largerTargets ? '10px' : '4px'};
+              font-family: var(--font-pixel);
+              font-size: ${improvements.largerTargets ? '10px' : '7.5px'};
+              cursor: pointer;
+            ">CONFIRM APPOINTMENT</button>
+          </div>
+        </div>
+
+        <!-- Improvements List checklist -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:11px; background:#0f172a; padding:10px; border-radius:4px; border:1px solid #334155;">
+          <div style="color: ${improvements.ariaLabels ? '#34d399' : '#64748b'};">
+            ${improvements.ariaLabels ? '✓' : '✗'} Semantic Input Labels
+          </div>
+          <div style="color: ${improvements.captions ? '#34d399' : '#64748b'};">
+            ${improvements.captions ? '✓' : '✗'} Subtitles & Audio Captions
+          </div>
+          <div style="color: ${improvements.colorIndicators ? '#34d399' : '#64748b'};">
+            ${improvements.colorIndicators ? '✓' : '✗'} Shape/Icon Indicators
+          </div>
+          <div style="color: ${improvements.largerTargets ? '#34d399' : '#64748b'};">
+            ${improvements.largerTargets ? '✓' : '✗'} Large Tap/Click Targets
+          </div>
+        </div>
+
+        <button id="btn-evolution-close" style="
+          width: 100%;
+          background: #38bdf8;
+          color: #0f172a;
+          border: none;
+          border-radius: 4px;
+          padding: 10px;
+          font-family: var(--font-pixel);
+          font-size: 9.5px;
+          font-weight: bold;
+          cursor: pointer;
+        ">BACK TO QUESTS</button>
+      </div>
+    `;
+
+    this.overlay.appendChild(modal);
+
+    modal.querySelector('#btn-evolution-close')?.addEventListener('click', () => {
+      (window as any).audioService?.playSelect?.();
+      modal.remove();
+      this.showTasksModal();
+    });
   }
 
 

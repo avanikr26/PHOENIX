@@ -14,20 +14,24 @@ describe('ChallengeManager', () => {
   it('selects the first available easy challenge for Rahul', () => {
     const challenge = challengeManager.getNextChallenge('rahul', 'easy');
     expect(challenge).not.toBeNull();
-    expect(challenge?.id).toBe('rahul-easy-1');
+    expect(challenge?.id).toBe('rahul-visual-easy-01');
   });
 
   it('evaluates answers and updates game score correctly', () => {
-    const result = challengeManager.submitAnswer('rahul-easy-1', 'opt-1');
+    const result = challengeManager.submitAnswer('rahul-visual-easy-01', 'b'); // Option 'b' is correct for rahul-visual-easy-01
     expect(result.isCorrect).toBe(true);
     expect(result.pointsEarned).toBeGreaterThan(0);
-    expect(gameStateManager.isChallengeCompleted('rahul-easy-1')).toBe(true);
+    expect(gameStateManager.isChallengeCompleted('rahul-visual-easy-01')).toBe(true);
   });
 
   it('unlocks medium challenge once easy prerequisite is completed', () => {
-    challengeManager.submitAnswer('rahul-easy-1', 'opt-1');
+    challengeManager.submitAnswer('rahul-visual-easy-01', 'b');
+    
+    // Manually set difficulty to medium for the next challenge fetch
+    gameStateManager.getState().currentDifficulty = 'medium';
+    
     const mediumChallenge = challengeManager.getNextChallenge('rahul', 'medium');
     expect(mediumChallenge).not.toBeNull();
-    expect(mediumChallenge?.id).toBe('rahul-medium-1');
+    expect(mediumChallenge?.id).toBe('rahul-visual-medium-01');
   });
 });

@@ -178,5 +178,6 @@ export interface GameState {
   unlockedLocations: string[];
   unlockedBadgeIds: string[];
   purchasedToolIds: string[];
+  websiteImprovements: Record<string, boolean>;
   isGameComplete: boolean;
 }

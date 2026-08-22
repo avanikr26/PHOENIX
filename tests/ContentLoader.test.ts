@@ -17,7 +17,7 @@ describe('ContentLoader', () => {
 
   it('retrieves challenges by ID correctly', () => {
     contentLoader.loadAll();
-    const challenge = contentLoader.getChallenge('rahul-easy-1');
+    const challenge = contentLoader.getChallenge('rahul-visual-easy-01');
     expect(challenge).toBeDefined();
     expect(challenge?.characterId).toBe('rahul');
   });
