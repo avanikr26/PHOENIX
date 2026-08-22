@@ -296,4 +296,158 @@ export class PortraitAssets {
       </svg>
     `;
   }
+
+  /**
+   * Generates Kofi SVG (Motor Accessibility Advocate)
+   */
+  public static getKofiSVG(size = 180): string {
+    return `
+      <svg width="${size}" height="${size * 1.25}" viewBox="0 0 180 225" xmlns="http://www.w3.org/2000/svg" style="display:block; image-rendering: crisp-edges;">
+        <defs>
+          <radialGradient id="kofi-glow" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#1e3a8a" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="kofi-jacket" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2563eb"/>
+            <stop offset="100%" stop-color="#1d4ed8"/>
+          </linearGradient>
+        </defs>
+
+        <circle cx="90" cy="100" r="85" fill="url(#kofi-glow)" />
+
+        <!-- Hoodie / Jacket -->
+        <path d="M 25 150 Q 90 135 155 150 L 175 225 L 5 225 Z" fill="url(#kofi-jacket)" stroke="#1e3a8a" stroke-width="3" />
+        <path d="M 75 145 L 90 180 L 105 145 Z" fill="#93c5fd" stroke="#1e40af" stroke-width="2" />
+
+        <!-- Neck -->
+        <rect x="78" y="110" width="24" height="30" fill="#fcd34d" stroke="#582a0b" stroke-width="2" />
+
+        <!-- Head / Face -->
+        <path d="M 48 65 Q 45 110 90 118 Q 135 110 132 65 Q 128 35 90 35 Q 52 35 48 65 Z" fill="#fcd34d" stroke="#582a0b" stroke-width="2.5" />
+
+        <!-- Short Dark Textured Hair -->
+        <path d="M 44 55 Q 50 22 90 22 Q 130 22 136 55 Q 120 32 90 32 Q 60 32 44 55 Z" fill="#171717" stroke="#000000" stroke-width="2" />
+
+        <!-- Focused Expressive Eyes -->
+        <ellipse cx="65" cy="74" rx="9" ry="11" fill="#1e293b" />
+        <ellipse cx="115" cy="74" rx="9" ry="11" fill="#1e293b" />
+        <circle cx="67" cy="71" r="3.5" fill="#ffffff" />
+        <circle cx="117" cy="71" r="3.5" fill="#ffffff" />
+
+        <!-- Confident Eyebrows -->
+        <path d="M 52 60 Q 64 54 76 60" fill="none" stroke="#171717" stroke-width="3" stroke-linecap="round" />
+        <path d="M 104 60 Q 116 54 128 60" fill="none" stroke="#171717" stroke-width="3" stroke-linecap="round" />
+
+        <!-- Smile -->
+        <path d="M 78 96 Q 90 106 102 96" fill="none" stroke="#92400e" stroke-width="3" stroke-linecap="round" />
+      </svg>
+    `;
+  }
+
+  /**
+   * Generates Elena SVG (Cognitive Clarity Advocate)
+   */
+  public static getElenaSVG(size = 180): string {
+    return `
+      <svg width="${size}" height="${size * 1.25}" viewBox="0 0 180 225" xmlns="http://www.w3.org/2000/svg" style="display:block; image-rendering: crisp-edges;">
+        <defs>
+          <radialGradient id="elena-glow" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#10b981" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#064e3b" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="elena-jacket" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#059669"/>
+            <stop offset="100%" stop-color="#047857"/>
+          </linearGradient>
+        </defs>
+
+        <circle cx="90" cy="100" r="85" fill="url(#elena-glow)" />
+
+        <!-- Cardigan / Top -->
+        <path d="M 25 150 Q 90 135 155 150 L 175 225 L 5 225 Z" fill="url(#elena-jacket)" stroke="#064e3b" stroke-width="3" />
+        <path d="M 75 145 L 90 175 L 105 145 Z" fill="#d1fae5" stroke="#047857" stroke-width="2" />
+
+        <!-- Neck -->
+        <rect x="78" y="110" width="24" height="30" fill="#fed7aa" stroke="#582a0b" stroke-width="2" />
+
+        <!-- Medium Auburn Bob Hair Back -->
+        <path d="M 38 60 Q 25 120 45 135 Q 90 145 135 135 Q 155 120 142 60 Z" fill="#573418" />
+
+        <!-- Head / Face -->
+        <path d="M 48 65 Q 45 110 90 118 Q 135 110 132 65 Q 128 35 90 35 Q 52 35 48 65 Z" fill="#fed7aa" stroke="#582a0b" stroke-width="2.5" />
+
+        <!-- Hair Bangs -->
+        <path d="M 42 55 Q 60 28 90 28 Q 125 28 138 55 Q 115 48 90 42 Q 65 48 42 55 Z" fill="#573418" stroke="#3b1d0c" stroke-width="2" />
+
+        <!-- Warm Gentle Eyes -->
+        <ellipse cx="65" cy="74" rx="9" ry="12" fill="#1e3a8a" />
+        <ellipse cx="115" cy="74" rx="9" ry="12" fill="#1e3a8a" />
+        <circle cx="67" cy="70" r="4" fill="#ffffff" />
+        <circle cx="117" cy="70" r="4" fill="#ffffff" />
+
+        <!-- Round Glasses -->
+        <circle cx="65" cy="74" r="15" fill="rgba(255,255,255,0.3)" stroke="#059669" stroke-width="2.5" />
+        <circle cx="115" cy="74" r="15" fill="rgba(255,255,255,0.3)" stroke="#059669" stroke-width="2.5" />
+        <line x1="80" y1="74" x2="100" y2="74" stroke="#059669" stroke-width="2.5" />
+
+        <!-- Gentle Smile -->
+        <path d="M 80 96 Q 90 105 100 96" fill="none" stroke="#92400e" stroke-width="3" stroke-linecap="round" />
+      </svg>
+    `;
+  }
+
+  /**
+   * Generates Yuki SVG (Language / Plain Language Advocate)
+   */
+  public static getYukiSVG(size = 180): string {
+    return `
+      <svg width="${size}" height="${size * 1.25}" viewBox="0 0 180 225" xmlns="http://www.w3.org/2000/svg" style="display:block; image-rendering: crisp-edges;">
+        <defs>
+          <radialGradient id="yuki-glow" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#78350f" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="yuki-jacket" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#d97706"/>
+            <stop offset="100%" stop-color="#b45309"/>
+          </linearGradient>
+        </defs>
+
+        <circle cx="90" cy="100" r="85" fill="url(#yuki-glow)" />
+
+        <!-- Cardigan / Coat -->
+        <path d="M 25 150 Q 90 135 155 150 L 175 225 L 5 225 Z" fill="url(#yuki-jacket)" stroke="#78350f" stroke-width="3" />
+        <path d="M 75 145 L 90 175 L 105 145 Z" fill="#fef3c7" stroke="#92400e" stroke-width="2" />
+
+        <!-- Neck -->
+        <rect x="78" y="110" width="24" height="30" fill="#fcd34d" stroke="#582a0b" stroke-width="2" />
+
+        <!-- Straight Black Hair Back -->
+        <path d="M 36 55 L 36 140 Q 90 150 144 140 L 144 55 Z" fill="#18181b" />
+
+        <!-- Head / Face -->
+        <path d="M 48 65 Q 45 110 90 118 Q 135 110 132 65 Q 128 35 90 35 Q 52 35 48 65 Z" fill="#fcd34d" stroke="#582a0b" stroke-width="2.5" />
+
+        <!-- Straight Dark Fringe Bangs -->
+        <path d="M 42 52 Q 60 25 90 25 Q 125 25 138 52 Q 115 56 90 56 Q 65 56 42 52 Z" fill="#18181b" stroke="#000000" stroke-width="2" />
+
+        <!-- Amber / Yellow Hairband -->
+        <path d="M 44 48 Q 90 22 136 48" fill="none" stroke="#fbbf24" stroke-width="5" stroke-linecap="round" />
+
+        <!-- Expressive Dark Eyes -->
+        <ellipse cx="65" cy="74" rx="9" ry="12" fill="#18181b" />
+        <ellipse cx="115" cy="74" rx="9" ry="12" fill="#18181b" />
+        <circle cx="67" cy="70" r="4" fill="#ffffff" />
+        <circle cx="117" cy="70" r="4" fill="#ffffff" />
+
+        <!-- Cheeks -->
+        <ellipse cx="54" cy="86" rx="8" ry="4" fill="#f472b6" opacity="0.5" />
+        <ellipse cx="126" cy="86" rx="8" ry="4" fill="#f472b6" opacity="0.5" />
+
+        <!-- Warm Inquisitive Smile -->
+        <path d="M 80 96 Q 90 106 100 96" fill="none" stroke="#92400e" stroke-width="3" stroke-linecap="round" />
+      </svg>
+    `;
+  }
 }

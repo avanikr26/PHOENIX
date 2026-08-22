@@ -157,6 +157,62 @@ export class GameStateManager {
       } else if (this.state.currentDifficulty === 'hard' && allHardDone) {
         this.state.isGameComplete = true;
       }
+
+      // --- Badge Milestones Unlocks ---
+      const completedCount = this.state.completedChallengeIds.length;
+      
+      const unlockBadge = (badgeId: string) => {
+        if (!this.state.unlockedBadgeIds.includes(badgeId)) {
+          this.state.unlockedBadgeIds.push(badgeId);
+          eventBus.emit('game:badge-unlocked', badgeId);
+        }
+      };
+
+      // 1. FIRST_FIX
+      if (completedCount >= 1) {
+        unlockBadge('FIRST_FIX');
+      }
+
+      // Filter challenges by category
+      const visualChals = allChallenges.filter(c => c.category === 'visual');
+      const auditoryChals = allChallenges.filter(c => c.category === 'auditory' || c.category === 'speech' || c.category === 'screen-reader');
+      const motorChals = allChallenges.filter(c => c.category === 'motor' || c.category === 'keyboard');
+      const cognitiveChals = allChallenges.filter(c => c.category === 'cognitive');
+
+      // 2. VISUAL_ACCESSIBILITY
+      const visualDone = visualChals.length > 0 && visualChals.every(c => this.state.completedChallengeIds.includes(c.id));
+      if (visualDone) {
+        unlockBadge('VISUAL_ACCESSIBILITY');
+      }
+
+      // 3. INCLUSIVE_AUDIO
+      const auditoryDone = auditoryChals.length > 0 && auditoryChals.every(c => this.state.completedChallengeIds.includes(c.id));
+      if (auditoryDone) {
+        unlockBadge('INCLUSIVE_AUDIO');
+      }
+
+      // 4. COLOR_CRUSHER
+      const grandmaDone = this.state.completedChallengeIds.some(id => id.includes('grandma') || id.includes('mira-color'));
+      if (grandmaDone) {
+        unlockBadge('COLOR_CRUSHER');
+      }
+
+      // 5. KEYBOARD_KNIGHT
+      const motorDone = motorChals.length > 0 && motorChals.every(c => this.state.completedChallengeIds.includes(c.id));
+      if (motorDone) {
+        unlockBadge('KEYBOARD_KNIGHT');
+      }
+
+      // 6. CLEAR_THINKER
+      const cognitiveDone = cognitiveChals.length > 0 && cognitiveChals.every(c => this.state.completedChallengeIds.includes(c.id));
+      if (cognitiveDone) {
+        unlockBadge('CLEAR_THINKER');
+      }
+
+      // 7. INCLUSIVE_ARCHITECT
+      if (completedCount >= allChallenges.length * 0.8) {
+        unlockBadge('INCLUSIVE_ARCHITECT');
+      }
     }
 
     this.notifyStateUpdate();

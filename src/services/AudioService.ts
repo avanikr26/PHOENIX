@@ -49,6 +49,55 @@ class AudioService {
   private _enabled = true;
   private _bgmActive = false;
 
+  /** Speak text using SpeechSynthesis (Web Speech API) */
+  speak(text: string, speaker?: string): void {
+    if (!this._enabled) return;
+    if (!window.speechSynthesis) return;
+
+    try {
+      window.speechSynthesis.cancel(); // Cancel any ongoing speech
+
+      // Remove markdown/quotes for speech synthesis reading
+      const cleanText = text.replace(/["'“”«»]/g, '').trim();
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+
+      // Setup pitches and rates for speaker character voices
+      if (speaker) {
+        const lowerSpeaker = speaker.toLowerCase();
+        if (lowerSpeaker.includes('grandma') || lowerSpeaker.includes('mira')) {
+          utterance.pitch = 0.75;
+          utterance.rate = 0.85;
+        } else if (lowerSpeaker.includes('rahul')) {
+          utterance.pitch = 0.95;
+          utterance.rate = 0.95;
+        } else if (lowerSpeaker.includes('fatima')) {
+          utterance.pitch = 1.25;
+          utterance.rate = 0.95;
+        } else if (lowerSpeaker.includes('ava') || lowerSpeaker.includes('player')) {
+          utterance.pitch = 1.1;
+          utterance.rate = 1.0;
+        }
+      }
+
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn('Speech synthesis failed:', e);
+    }
+  }
+
+  toggleMute(): boolean {
+    this._enabled = !this._enabled;
+    if (!this._enabled) {
+      this.stopCityAmbience();
+      try {
+        if (window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+      } catch (e) {}
+    }
+    return !this._enabled; // returns isMuted
+  }
+
   /** Short typewriter blip for each character in dialogue */
   playBlip(): void {
     if (!this._enabled) return;
@@ -115,7 +164,12 @@ class AudioService {
 
   setEnabled(value: boolean): void {
     this._enabled = value;
-    if (!value) this._bgmActive = false;
+    if (!value) {
+      this._bgmActive = false;
+      try {
+        if (window.speechSynthesis) window.speechSynthesis.cancel();
+      } catch {}
+    }
   }
 
   isEnabled(): boolean {

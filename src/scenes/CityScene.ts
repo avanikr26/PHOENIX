@@ -42,6 +42,9 @@ export class CityScene extends Phaser.Scene {
   private rahulNPC!: Phaser.GameObjects.Sprite;
   private fatimaNPC!: Phaser.GameObjects.Sprite;
   private grandmaNPC!: Phaser.GameObjects.Sprite;
+  private kofiNPC!: Phaser.GameObjects.Sprite;
+  private elenaNPC!: Phaser.GameObjects.Sprite;
+  private yukiNPC!: Phaser.GameObjects.Sprite;
 
   // Traffic & Pedestrians
   private vehicles: VehicleLoop[] = [];
@@ -51,6 +54,7 @@ export class CityScene extends Phaser.Scene {
   private speechBubbles: Map<string, Phaser.GameObjects.Container> = new Map();
   private readonly INTERACT_RADIUS = 68;
   private nearbyCharacterId: string | null = null;
+  private controlsLocked = false;
 
   // Depth Layers
   private readonly DEPTH_BG        = 0;
@@ -72,6 +76,7 @@ export class CityScene extends Phaser.Scene {
 
     this.vehicles = [];
     this.pedestrians = [];
+    this.controlsLocked = true;
 
     this.buildCityInfrastructure(width, height);
     this.buildBuildingBlocks(width);
@@ -85,16 +90,56 @@ export class CityScene extends Phaser.Scene {
     // ── Launch 3D Roblox World ─────────────────────────────────────────────
     this.init3DRobloxWorld();
 
-    // Intro message
-    this.time.delayedCall(800, () => {
-      if (!gameStateManager.isChallengeCompleted('intro-shown')) {
-        eventBus.emit(GameEvents.DIALOGUE_NODE, {
-          id: 'ava-city-intro',
-          speaker: 'Ava',
-          text: "Welcome to 3D Access City! Use WASD to walk, Spacebar to jump, and drag the mouse to look around in 3D. Approach people to help them!",
-          nextId: null,
-        });
-      }
+    // Welcome Overlay Banner (Image 1 top-center style)
+    const root = document.getElementById('dom-overlay') ?? document.body;
+    const welcome = document.createElement('div');
+    welcome.id = 'welcome-city-overlay';
+    welcome.style.cssText = `
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 12, 22, 0.9);
+      backdrop-filter: blur(8px);
+      z-index: 120;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-pixel);
+      color: #ffffff;
+      pointer-events: auto;
+    `;
+    welcome.innerHTML = `
+      <div style="text-align: center; display:flex; flex-direction:column; gap:16px; max-width:600px; padding:20px;">
+        <h1 style="font-size: clamp(18px, 3.5vw, 30px); letter-spacing: 2px; color: #fbbf24; text-shadow: 0 0 15px rgba(251, 191, 36, 0.4); margin:0;">
+          WELCOME TO ACCESS CITY
+        </h1>
+        <p style="font-family: var(--font-body); font-size: 14px; color: #cbd5e1; font-weight: 500; line-height:1.5; margin:0;">
+          Eliminate accessibility barriers to design a digital product landscape for all citizens.
+        </p>
+      </div>
+    `;
+    root.appendChild(welcome);
+
+    // Fade out welcome overlay and unlock controls after 2.5s
+    this.time.delayedCall(2500, () => {
+      gsap.to(welcome, {
+        opacity: 0,
+        duration: 0.5,
+        onComplete: () => {
+          welcome.remove();
+          this.controlsLocked = false;
+
+          // Play standard introduction dialogue
+          if (!gameStateManager.isChallengeCompleted('intro-shown')) {
+            eventBus.emit(GameEvents.DIALOGUE_NODE, {
+              id: 'ava-city-intro',
+              speaker: 'Ava',
+              text: "Welcome to 3D Access City! Use WASD to walk, Spacebar to jump, and drag the mouse to look around in 3D. Approach people to help them!",
+              nextId: null,
+            });
+          }
+        }
+      });
     });
   }
 
@@ -453,7 +498,31 @@ export class CityScene extends Phaser.Scene {
     this.addNPCLabel(740, 285, 'Grandma', '#fbbf24');
     this.createSpeechBubble(740, 265, 'grandma', 'Tap here!');
 
-    // 4. Player (Ava — starts in Central Plaza at X: 640, Y: 440)
+    // 4. Kofi (Motor - Sits near Tech Office at X: 850, Y: 420)
+    this.kofiNPC = this.add.sprite(850, 420, 'char-ped1')
+      .setScale(2.5)
+      .setDepth(this.DEPTH_NPCS)
+      .setTint(0x93c5fd);
+    this.addNPCLabel(850, 380, 'Kofi', '#60a5fa');
+    this.createSpeechBubble(850, 360, 'kofi', 'Tap here!');
+
+    // 5. Elena (Cognitive - Library plaza at X: 480, Y: 240)
+    this.elenaNPC = this.add.sprite(480, 240, 'char-ped2')
+      .setScale(2.5)
+      .setDepth(this.DEPTH_NPCS)
+      .setTint(0xa7f3d0);
+    this.addNPCLabel(480, 200, 'Elena', '#34d399');
+    this.createSpeechBubble(480, 180, 'elena', 'Tap here!');
+
+    // 6. Yuki (Language - Cafe plaza east at X: 1100, Y: 240)
+    this.yukiNPC = this.add.sprite(1100, 240, 'char-ped1')
+      .setScale(2.5)
+      .setDepth(this.DEPTH_NPCS)
+      .setTint(0xfacc15);
+    this.addNPCLabel(1100, 200, 'Yuki', '#facc15');
+    this.createSpeechBubble(1100, 180, 'yuki', 'Tap here!');
+
+    // 7. Player (Ava — starts in Central Plaza at X: 640, Y: 440)
     this.player = this.add.sprite(640, 440, 'char-ava')
       .setScale(2.5)
       .setDepth(this.DEPTH_PLAYER);
@@ -575,6 +644,8 @@ export class CityScene extends Phaser.Scene {
   }
 
   update() {
+    if (this.controlsLocked) return;
+
     // 1. Move Player
     const speed = 3.2;
     const { width, height } = this.scale;
@@ -621,6 +692,9 @@ export class CityScene extends Phaser.Scene {
       { id: 'rahul',   sprite: this.rahulNPC },
       { id: 'fatima',  sprite: this.fatimaNPC },
       { id: 'grandma', sprite: this.grandmaNPC },
+      { id: 'kofi',    sprite: this.kofiNPC },
+      { id: 'elena',   sprite: this.elenaNPC },
+      { id: 'yuki',    sprite: this.yukiNPC },
     ];
 
     let found: string | null = null;
@@ -648,17 +722,6 @@ export class CityScene extends Phaser.Scene {
   private interactWith(charId: string) {
     (window as any).audioService?.playSelect?.();
     gameStateManager.setCurrentCharacter(charId);
-
-    if (charId === 'fatima') {
-      eventBus.emit(GameEvents.DIALOGUE_NODE, {
-        id: 'fatima-bus-dialogue',
-        speaker: 'Fatima',
-        text: "I need to get to my interview on the other side of the city, but the bus schedule is so confusing...",
-        nextId: null,
-      });
-      return;
-    }
-
     dialogueManager.startDialogue(charId);
   }
 }

@@ -15,7 +15,7 @@ export function createGame(containerId: string): Phaser.Game {
     height: 720,
     pixelArt: true,
     antialias: false,
-    backgroundColor: '#1a1a2e',
+    transparent: true,
     scale: {
       mode: Phaser.Scale.FIT,
       autoCenter: Phaser.Scale.CENTER_BOTH,

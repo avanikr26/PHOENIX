@@ -221,6 +221,114 @@ export const INITIAL_CHARACTERS: Character[] = [
       },
     },
   },
+  {
+    id: 'kofi',
+    name: 'Kofi',
+    role: 'Motor Accessibility Advocate',
+    bio: 'Kofi cannot use a mouse and relies entirely on keyboard tab navigation to read, code, and browse websites.',
+    storyRole: 'Advocates for logical tab sequence, visual focus indicators, and custom shortcut commands.',
+    avatarColor: 0x3b82f6,
+    accessibilityNeeds: ['motor', 'keyboard'],
+    initialDialogueId: 'kofi-intro-1',
+    dialogueTree: {
+      'kofi-intro-1': {
+        id: 'kofi-intro-1',
+        speaker: 'Kofi',
+        text: "Hey there, Ava. I heard you're auditing the design lab portal.",
+        nextId: 'kofi-intro-2',
+      },
+      'kofi-intro-2': {
+        id: 'kofi-intro-2',
+        speaker: 'Player',
+        text: "Hey Kofi. Yes, I want to make sure it's fully accessible for everyone.",
+        nextId: 'kofi-intro-3',
+      },
+      'kofi-intro-3': {
+        id: 'kofi-intro-3',
+        speaker: 'Kofi',
+        text: "Good! Because right now, I can't use it. When I try to press Tab, the focus disappears entirely into invisible advertisement links.",
+        nextId: 'kofi-intro-4',
+      },
+      'kofi-intro-4': {
+        id: 'kofi-intro-4',
+        speaker: 'Kofi',
+        text: "I have no idea where my keyboard outline is. Can you help fix the focus style?",
+        triggerChallengeId: 'kofi-motor-easy-01',
+      },
+    },
+  },
+  {
+    id: 'elena',
+    name: 'Elena',
+    role: 'Cognitive Design Advocate',
+    bio: 'Elena gets easily overwhelmed by flashing content, complex forms, and sudden timed sessions.',
+    storyRole: 'Advocates for clean layouts, persistent user input values, clear errors, and session extensions.',
+    avatarColor: 0x10b981,
+    accessibilityNeeds: ['cognitive'],
+    initialDialogueId: 'elena-intro-1',
+    dialogueTree: {
+      'elena-intro-1': {
+        id: 'elena-intro-1',
+        speaker: 'Elena',
+        text: "Hello, Ava. Can I ask you about the registration forms?",
+        nextId: 'elena-intro-2',
+      },
+      'elena-intro-2': {
+        id: 'elena-intro-2',
+        speaker: 'Player',
+        text: "Sure, Elena. What's the issue with them?",
+        nextId: 'elena-intro-3',
+      },
+      'elena-intro-3': {
+        id: 'elena-intro-3',
+        speaker: 'Elena',
+        text: "They are so stressful! If I make one small typo, the form clears all fields completely, forcing me to start over under a strict time limit.",
+        nextId: 'elena-intro-4',
+      },
+      'elena-intro-4': {
+        id: 'elena-intro-4',
+        speaker: 'Elena',
+        text: "It makes my anxiety spike and makes it hard to complete applications. Is there a better design?",
+        triggerChallengeId: 'elena-cognitive-easy-01',
+      },
+    },
+  },
+  {
+    id: 'yuki',
+    name: 'Yuki',
+    role: 'Language and Localization Advocate',
+    bio: 'Yuki is a non-native speaker who struggles with dense, complex legal phrasing and idioms in digital products.',
+    storyRole: 'Advocates for plain language summaries, localization options, and clean textual descriptions.',
+    avatarColor: 0xf59e0b,
+    accessibilityNeeds: ['language'],
+    initialDialogueId: 'yuki-intro-1',
+    dialogueTree: {
+      'yuki-intro-1': {
+        id: 'yuki-intro-1',
+        speaker: 'Yuki',
+        text: "Excuse me. Ava, right?",
+        nextId: 'yuki-intro-2',
+      },
+      'yuki-intro-2': {
+        id: 'yuki-intro-2',
+        speaker: 'Player',
+        text: "Yes, hello! Can I help you with the registration page?",
+        nextId: 'yuki-intro-3',
+      },
+      'yuki-intro-3': {
+        id: 'yuki-intro-3',
+        speaker: 'Yuki',
+        text: "Yes. The civic enrollment page uses extremely complex legal jargon and phrases I've never heard before.",
+        nextId: 'yuki-intro-4',
+      },
+      'yuki-intro-4': {
+        id: 'yuki-intro-4',
+        speaker: 'Yuki',
+        text: "Without plain summaries or definitions, it is impossible for non-native speakers like me. Can you improve this text?",
+        triggerChallengeId: 'yuki-language-easy-01',
+      },
+    },
+  },
 ];
 
 export const INITIAL_CHALLENGES: Challenge[] = [
@@ -1600,5 +1708,465 @@ export const INITIAL_CHALLENGES: Challenge[] = [
     "transformation": {
       "type": "color-indicators"
     }
+  },
+  {
+    "id": "kofi-motor-easy-01",
+    "characterId": "kofi",
+    "category": "motor",
+    "difficulty": "easy",
+    "title": "Kofi Focus Indicator",
+    "scenario": "Kofi is navigating a form using the Tab key. There is no visual outline indicating which button currently has keyboard focus, making navigation blind.",
+    "description": "Kofi is navigating a form using the Tab key. There is no visual outline indicating which button currently has keyboard focus, making navigation blind.",
+    "question": "Which CSS rule is essential for restoring keyboard focus visibility?",
+    "explanation": "WCAG 2.4.7 requires that any keyboard operable user interface has a mode of operation where the keyboard focus indicator is visible.",
+    "accessibilityPrinciple": "WCAG 2.4.7 Focus Visible",
+    "options": [
+      {
+        "id": "a",
+        "label": "Use :focus { outline: 2px solid #fbbf24; outline-offset: 2px; } to show a clear indicator.",
+        "description": "",
+        "isCorrect": true,
+        "scoreBonus": 40,
+        "feedback": "Correct! A high-contrast focus ring allows keyboard-only users to track their active location."
+      },
+      {
+        "id": "b",
+        "label": "Set outline: none in the styling to make it look clean.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Removing outline makes it impossible for keyboard users to know where they are."
+      },
+      {
+        "id": "c",
+        "label": "Rely on color changing transitions only.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Subtle color transitions are often missed and can fail color contrast guidelines."
+      },
+      {
+        "id": "d",
+        "label": "Disable tab navigation entirely.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Disabling keyboard navigation completely excludes non-mouse users."
+      }
+    ],
+    "points": 100,
+    "rewardCredits": 20,
+    "transformation": {
+      "type": "keyboardAlternative"
+    }
+  },
+  {
+    "id": "kofi-motor-medium-01",
+    "characterId": "kofi",
+    "category": "motor",
+    "difficulty": "medium",
+    "title": "Kofi Logical Tab Sequence",
+    "scenario": "Kofi starts filling a multi-step design lab setup form. When pressing Tab, the focus moves randomly from the header directly to the footer, skipping the form fields.",
+    "description": "Kofi starts filling a multi-step design lab setup form. When pressing Tab, the focus moves randomly from the header directly to the footer, skipping the form fields.",
+    "question": "How do you correct the tab navigation sequence?",
+    "explanation": "WCAG 2.4.3 Focus Order ensures focusable components receive focus in an order that preserves meaning and operability.",
+    "accessibilityPrinciple": "WCAG 2.4.3 Focus Order",
+    "options": [
+      {
+        "id": "a",
+        "label": "Structure the HTML DOM in a logical reading order so focus flows naturally from top to bottom.",
+        "description": "",
+        "isCorrect": true,
+        "scoreBonus": 50,
+        "feedback": "Correct! Natural DOM order ensures intuitive keyboard progression without messy positive tabindex values."
+      },
+      {
+        "id": "b",
+        "label": "Set tabindex=0 on every single span and div element.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Setting tabindex on non-interactive elements clutters the tab loop."
+      },
+      {
+        "id": "c",
+        "label": "Hardcode positive tabindex attributes (tabindex=1, tabindex=2) everywhere.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Positive tabindex is considered an anti-pattern as it easily breaks maintenance."
+      },
+      {
+        "id": "d",
+        "label": "Remove keyboard tab support.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Keyboard accessibility is mandatory."
+      }
+    ],
+    "points": 200,
+    "rewardCredits": 30,
+    "transformation": {
+      "type": "keyboardAlternative"
+    }
+  },
+  {
+    "id": "kofi-motor-hard-01",
+    "characterId": "kofi",
+    "category": "motor",
+    "difficulty": "hard",
+    "title": "Kofi Modal Focus Trap",
+    "scenario": "Kofi reaches a complex slide-out settings drawer. When pressing Tab, the focus goes behind the drawer to elements on the main page, trapping him.",
+    "description": "Kofi reaches a complex slide-out settings drawer. When pressing Tab, the focus goes behind the drawer to elements on the main page, trapping him.",
+    "question": "What is the best way to handle focus for a modal or drawer?",
+    "explanation": "Accessible dialogs should trap focus within their interactive boundaries while open and restore focus upon closing.",
+    "accessibilityPrinciple": "WCAG 2.1.2 No Keyboard Trap & Dialog Patterns",
+    "options": [
+      {
+        "id": "a",
+        "label": "Implement focus trapping: restrict focus cycling within the active drawer until it is closed, and return focus on close.",
+        "description": "",
+        "isCorrect": true,
+        "scoreBonus": 60,
+        "feedback": "Correct! Focus trapping ensures keyboard users never get lost behind active overlays."
+      },
+      {
+        "id": "b",
+        "label": "Leave the focus free to navigate behind the modal.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Leaving focus free allows users to interact with hidden background controls."
+      },
+      {
+        "id": "c",
+        "label": "Remove the cancel/close buttons.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Close buttons are essential for all users."
+      },
+      {
+        "id": "d",
+        "label": "Make the modal close automatically on any click.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "This causes accidental dismissals and disorients users."
+      }
+    ],
+    "points": 300,
+    "rewardCredits": 40,
+    "transformation": {
+      "type": "keyboardAlternative"
+    }
+  },
+  {
+    "id": "elena-cognitive-easy-01",
+    "characterId": "elena",
+    "category": "cognitive",
+    "difficulty": "easy",
+    "title": "Elena Error Recovery",
+    "scenario": "Elena is filling out a form and makes a mistake. The page reloads, clears all the values she typed, and shows a generic 'Invalid input' error at the top.",
+    "description": "Elena is filling out a form and makes a mistake. The page reloads, clears all the values she typed, and shows a generic 'Invalid input' error at the top.",
+    "question": "How can we improve the error handling?",
+    "explanation": "WCAG 3.3.1 Error Identification and 3.3.3 Error Suggestion ensure errors are clearly pointed out and easy to fix without losing work.",
+    "accessibilityPrinciple": "WCAG 3.3.1 Error Identification",
+    "options": [
+      {
+        "id": "a",
+        "label": "Preserve user inputs, highlight the specific fields with errors, and describe how to fix them plainly.",
+        "description": "",
+        "isCorrect": true,
+        "scoreBonus": 40,
+        "feedback": "Correct! Preserving data and providing specific inline guidance prevents cognitive fatigue and frustration."
+      },
+      {
+        "id": "b",
+        "label": "Clear all inputs for security and show a longer error message.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Clearing inputs causes extreme frustration and data loss."
+      },
+      {
+        "id": "c",
+        "label": "Do not validate forms at all.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Forms need validation to ensure submitted information is accurate."
+      },
+      {
+        "id": "d",
+        "label": "Add a loud buzzer sound on submission failure.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Harsh audio alerts increase anxiety and cause sensory overload."
+      }
+    ],
+    "points": 100,
+    "rewardCredits": 20,
+    "transformation": {
+      "type": "simplifiedLayout"
+    }
+  },
+  {
+    "id": "elena-cognitive-medium-01",
+    "characterId": "elena",
+    "category": "cognitive",
+    "difficulty": "medium",
+    "title": "Elena Visual Hierarchy & Distractions",
+    "scenario": "Elena is reading a dense 4-step wizard interface. The screen is packed with flash banners, auto-playing videos, complex grid widgets, and floating popups.",
+    "description": "Elena is reading a dense 4-step wizard interface. The screen is packed with flash banners, auto-playing videos, complex grid widgets, and floating popups.",
+    "question": "How can we reduce cognitive load for this wizard interface?",
+    "explanation": "WCAG 2.2.2 Pause, Stop, Hide and clean visual hierarchies reduce sensory distractions for cognitive accessibility.",
+    "accessibilityPrinciple": "WCAG 2.2.2 & Cognitive Load Minimization",
+    "options": [
+      {
+        "id": "a",
+        "label": "Mute animations, simplify the visual hierarchy, and focus on one clear step per screen.",
+        "description": "",
+        "isCorrect": true,
+        "scoreBonus": 50,
+        "feedback": "Correct! Breaking tasks into clean, predictable steps reduces overwhelm."
+      },
+      {
+        "id": "b",
+        "label": "Add more vibrant colors to highlight all sections simultaneously.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Excessive colors increase visual clutter and competition for attention."
+      },
+      {
+        "id": "c",
+        "label": "Provide a complex PDF manual to download.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "External manuals force users out of the flow and add burden."
+      },
+      {
+        "id": "d",
+        "label": "Keep everything as-is but increase font size.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Increasing font size alone without decluttering makes crowded layouts worse."
+      }
+    ],
+    "points": 200,
+    "rewardCredits": 30,
+    "transformation": {
+      "type": "simplifiedLayout"
+    }
+  },
+  {
+    "id": "elena-cognitive-hard-01",
+    "characterId": "elena",
+    "category": "cognitive",
+    "difficulty": "hard",
+    "title": "Elena Timing Adjustable",
+    "scenario": "Elena is applying for a permit. The session has a strict 60-second timeout. At 50 seconds, she receives no warning, and the page abruptly logs her out, deleting her progress.",
+    "description": "Elena is applying for a permit. The session has a strict 60-second timeout. At 50 seconds, she receives no warning, and the page abruptly logs her out, deleting her progress.",
+    "question": "What WCAG compliant action should be taken?",
+    "explanation": "WCAG 2.2.1 Timing Adjustable requires that users have options to turn off, adjust, or extend time limits before expiring.",
+    "accessibilityPrinciple": "WCAG 2.2.1 Timing Adjustable",
+    "options": [
+      {
+        "id": "a",
+        "label": "Provide a clear warning prompt at least 20 seconds before timeout, allowing the user to easily extend the session with a single action.",
+        "description": "",
+        "isCorrect": true,
+        "scoreBonus": 60,
+        "feedback": "Correct! Giving users advance notice and the option to extend time limits ensures they can complete tasks at their own pace."
+      },
+      {
+        "id": "b",
+        "label": "Remove timeouts completely on public insecure kiosks.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Security sensitive contexts require adjustable limits rather than total elimination."
+      },
+      {
+        "id": "c",
+        "label": "Increase the static timer slightly to 75 seconds without any warning.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Static increases do not solve unpredictable cognitive processing needs."
+      },
+      {
+        "id": "d",
+        "label": "Redirect to the beginning automatically.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Silent redirection discards user work and causes extreme confusion."
+      }
+    ],
+    "points": 300,
+    "rewardCredits": 40,
+    "transformation": {
+      "type": "simplifiedLayout"
+    }
+  },
+  {
+    "id": "yuki-language-easy-01",
+    "characterId": "yuki",
+    "category": "language",
+    "difficulty": "easy",
+    "title": "Yuki Plain Language",
+    "scenario": "Yuki opens a legal terms agreement. The text is written in dense jargon (e.g., 'heretofore', 'indemnify'). She cannot find a plain-language summary.",
+    "description": "Yuki opens a legal terms agreement. The text is written in dense jargon (e.g., 'heretofore', 'indemnify'). She cannot find a plain-language summary.",
+    "question": "What is the best way to write inclusive, accessible content?",
+    "explanation": "WCAG 3.1.5 Reading Level recommends providing supplementary plain language summaries for content that requires advanced reading ability.",
+    "accessibilityPrinciple": "WCAG 3.1.5 Reading Level & Plain Language",
+    "options": [
+      {
+        "id": "a",
+        "label": "Provide clear headings, plain-language summaries, and define complex terms in a glossary.",
+        "description": "",
+        "isCorrect": true,
+        "scoreBonus": 40,
+        "feedback": "Correct! Plain language benefits second-language speakers, cognitive accessibility, and general user comprehension."
+      },
+      {
+        "id": "b",
+        "label": "Write only in dense legal terms to prevent any ambiguity.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Unexplained jargon creates high cognitive and linguistic barriers."
+      },
+      {
+        "id": "c",
+        "label": "Translate everything to Japanese automatically using unreviewed machine translation only.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Unreviewed machine translation can distort legal meaning."
+      },
+      {
+        "id": "d",
+        "label": "Decrease text size to make the document look shorter.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Smaller text worsens visual readability."
+      }
+    ],
+    "points": 100,
+    "rewardCredits": 20,
+    "transformation": {
+      "type": "readableTypography"
+    }
+  },
+  {
+    "id": "yuki-language-medium-01",
+    "characterId": "yuki",
+    "category": "language",
+    "difficulty": "medium",
+    "title": "Yuki Language of Parts",
+    "scenario": "Yuki navigates a multilingual portal. The screen-reader reads aloud in a default English accent, but a section of the text is in Spanish, causing gibberish pronunciation.",
+    "description": "Yuki navigates a multilingual portal. The screen-reader reads aloud in a default English accent, but a section of the text is in Spanish, causing gibberish pronunciation.",
+    "question": "How do you ensure screen readers use the correct pronunciation for foreign phrases?",
+    "explanation": "WCAG 3.1.2 Language of Parts requires identifying the human language of each passage in the content.",
+    "accessibilityPrinciple": "WCAG 3.1.2 Language of Parts",
+    "options": [
+      {
+        "id": "a",
+        "label": "Declare the correct language attribute on the HTML container element (e.g., <span lang='es'>).",
+        "description": "",
+        "isCorrect": true,
+        "scoreBonus": 50,
+        "feedback": "Correct! The lang attribute tells assistive tools and TTS synthesizers to switch pronunciation rules automatically."
+      },
+      {
+        "id": "b",
+        "label": "Spell foreign words phonetically in English.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Phonetic respelling degrades textual readability and searchability."
+      },
+      {
+        "id": "c",
+        "label": "Use translate='no' on all elements.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "This disables browser translations rather than fixing pronunciation."
+      },
+      {
+        "id": "d",
+        "label": "Provide an image of the text instead.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Images of text are inaccessible to screen readers and user resizing."
+      }
+    ],
+    "points": 200,
+    "rewardCredits": 30,
+    "transformation": {
+      "type": "readableTypography"
+    }
+  },
+  {
+    "id": "yuki-language-hard-01",
+    "characterId": "yuki",
+    "category": "language",
+    "difficulty": "hard",
+    "title": "Yuki Idioms and Ambiguity",
+    "scenario": "Yuki is filling a registration form. The inputs use highly confusing localized idioms and figures of speech (e.g., 'What is your john-hancock?').",
+    "description": "Yuki is filling a registration form. The inputs use highly confusing localized idioms and figures of speech (e.g., 'What is your john-hancock?').",
+    "question": "How should labels and instructions be phrased?",
+    "explanation": "WCAG 3.1.3 Unusual Words and clear communication guidelines recommend using literal, direct words over cultural idioms.",
+    "accessibilityPrinciple": "WCAG 3.1.3 & Plain Localization",
+    "options": [
+      {
+        "id": "a",
+        "label": "Use direct, literal phrasing (e.g., 'Digital Signature') without slang, cultural metaphors, or idioms.",
+        "description": "",
+        "isCorrect": true,
+        "scoreBonus": 60,
+        "feedback": "Correct! Direct literal phrasing ensures clear understanding across diverse cultures and languages."
+      },
+      {
+        "id": "b",
+        "label": "Add tooltips explaining the history of the slang.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Explanations add unnecessary reading friction instead of solving the ambiguity."
+      },
+      {
+        "id": "c",
+        "label": "Translate the idiom word-for-word into other languages.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Literal translations of idioms produce nonsensical phrases."
+      },
+      {
+        "id": "d",
+        "label": "Replace all text labels with ambiguous icons.",
+        "description": "",
+        "isCorrect": false,
+        "scoreBonus": 0,
+        "feedback": "Icons without text labels create even higher ambiguity."
+      }
+    ],
+    "points": 300,
+    "rewardCredits": 40,
+    "transformation": {
+      "type": "readableTypography"
+    }
   }
 ];
+

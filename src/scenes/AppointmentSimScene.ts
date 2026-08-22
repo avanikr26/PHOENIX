@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import gsap from 'gsap';
 import { audioService } from '../services/AudioService';
+import { gameStateManager } from '../core/GameStateManager';
 
 /**
  * AppointmentSimScene — Inaccessible healthcare booking portal simulation:
@@ -19,16 +20,23 @@ export class AppointmentSimScene extends Phaser.Scene {
   private selectedDate = "";
   private selectedTime = "";
   private captchaCode = "";
+  private realizationTimeline: gsap.core.Timeline | null = null;
 
   constructor() {
     super('AppointmentSimScene');
   }
 
   create() {
+    gameStateManager.setCurrentScene('AppointmentSimScene');
     this.timeLeft = 30;
     this.selectedDate = "";
     this.selectedTime = "";
     this.generateCaptcha();
+    
+    // Clean up timer and overlay when leaving the scene
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.shutdown();
+    });
     
     this.add.rectangle(0, 0, this.scale.width * 2, this.scale.height * 2, 0x0a0c16);
     this.renderStartOverlay();
@@ -156,18 +164,20 @@ export class AppointmentSimScene extends Phaser.Scene {
             CityCare Hospital Scheduling
           </div>
           <div id="sim-timer-badge" style="
-            background: #fee2e2;
-            border: 1px solid #f87171;
-            border-radius: 12px;
-            padding: 2px 8px;
+            background: #dc2626;
+            border: 1.5px solid #991b1b;
+            border-radius: 4px;
+            padding: 4px 8px;
             font-family: var(--font-pixel);
-            font-size: 9px;
-            color: #dc2626;
+            font-size: 9.5px;
+            color: #ffffff;
             display: flex;
             align-items: center;
             gap: 4px;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.4);
+            font-weight: bold;
           ">
-            ⏱ <span id="sim-time">00:30</span>
+            ⏱ <span id="sim-time">TIME LEFT: 30s</span>
           </div>
         </div>
 
@@ -315,8 +325,8 @@ export class AppointmentSimScene extends Phaser.Scene {
 
     // Calendar selection event
     dropdown.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'SPAN' && target.dataset.date) {
+      const target = (e.target as HTMLElement).closest('.cal-day') as HTMLElement;
+      if (target && target.dataset.date) {
         this.selectedDate = target.dataset.date;
         const textEl = container.querySelector('#selected-date-text') as HTMLElement;
         textEl.textContent = this.selectedDate;
@@ -331,9 +341,13 @@ export class AppointmentSimScene extends Phaser.Scene {
       this.timeLeft--;
       const timeEl = document.getElementById('sim-time');
       if (timeEl) {
-        timeEl.textContent = `00:${String(this.timeLeft).padStart(2, '0')}`;
+        timeEl.textContent = `TIME LEFT: ${this.timeLeft}s`;
       }
       if (this.timeLeft <= 0) {
+        if (this.timerInterval) {
+          clearInterval(this.timerInterval);
+          this.timerInterval = null;
+        }
         this.triggerRealizationSequence();
       }
     }, 1000);
@@ -521,8 +535,9 @@ export class AppointmentSimScene extends Phaser.Scene {
       </div>
     `;
 
-    const tl = gsap.timeline();
-    tl.to('#rz-1', { opacity: 1, duration: 0.8, delay: 0.2, onStart: () => audioService.playBlip() })
+    this.realizationTimeline = gsap.timeline();
+    this.realizationTimeline
+      .to('#rz-1', { opacity: 1, duration: 0.8, delay: 0.2, onStart: () => audioService.playBlip() })
       .to('#rz-2', { opacity: 1, duration: 0.8, delay: 0.6, onStart: () => audioService.playGlitch() })
       .to('#rz-3', { opacity: 1, duration: 0.8, delay: 0.6 })
       .to('#rz-4', { opacity: 1, duration: 0.8, delay: 0.6, onStart: () => audioService.playCorrect() })
@@ -530,15 +545,17 @@ export class AppointmentSimScene extends Phaser.Scene {
 
     this.domOverlay.querySelector('#rz-enter-btn')?.addEventListener('click', () => {
       audioService.playSelect();
+      this.realizationTimeline?.kill();
       if (this.domOverlay) {
         gsap.to(this.domOverlay, {
           opacity: 0,
           duration: 0.4,
           onComplete: () => {
-            this.domOverlay?.remove();
-            this.domOverlay = null;
+            this.shutdown();
             this.scene.start('CityScene');
-            this.scene.start('UIScene');
+            if (!this.scene.isActive('UIScene')) {
+              this.scene.launch('UIScene');
+            }
           }
         });
       }
@@ -546,7 +563,14 @@ export class AppointmentSimScene extends Phaser.Scene {
   }
 
   shutdown() {
-    if (this.timerInterval) clearInterval(this.timerInterval);
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+    if (this.realizationTimeline) {
+      this.realizationTimeline.kill();
+      this.realizationTimeline = null;
+    }
     this.domOverlay?.remove();
     this.domOverlay = null;
   }

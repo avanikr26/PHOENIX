@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { gameStateManager } from '../core/GameStateManager';
 import { dialogueManager } from '../gameplay/DialogueManager';
-import { eventBus, GameEvents } from '../core/EventBus';
 
 /**
  * ThreeCityWorld — Authoritative 3D Low-Poly Stylized City (CITY_3D_VISUAL_DIRECTION.md)
@@ -50,6 +49,7 @@ export class ThreeCityWorld {
   // Lifecycle
   private isDestroyed = false;
   private animFrameId: number | null = null;
+  private promptElement: HTMLDivElement | null = null;
 
   constructor(containerId: string) {
     const el = document.getElementById(containerId);
@@ -623,14 +623,31 @@ export class ThreeCityWorld {
       name: 'Rahul', role: 'Accessibility Advocate', hasGlasses: true, hasCane: true, hasGuideDog: true
     });
 
-    // 3. Fatima (At Metro Central Transit Station in 3D Wheelchair at X: 26, Z: 10)
-    this.createFatimaWheelchair(26, 10);
+    // 3. Fatima (At Far East Library Crossing in 3D Wheelchair at X: 66, Z: 10)
+    this.createFatimaWheelchair(66, 10);
 
     // 4. Grandma Mira (At Cafe Patio Terrace at X: 20, Z: 26)
     this.createCharacterNPC({
       x: 20, z: 26,
       shirtColor: 0xd97706, pantsColor: 0x78350f, hairColor: 0xcfd8dc,
       name: 'Grandma Mira', role: 'Senior Citizen', hasGlasses: true, hasCane: true
+    });
+
+    // 5. Kofi (At Office District in 3D Wheelchair at X: 15, Z: -20)
+    this.createKofiWheelchair(15, -20);
+
+    // 6. Elena (At Library Plaza at X: -15, Z: 26)
+    this.createCharacterNPC({
+      x: -15, z: 26,
+      shirtColor: 0x10b981, pantsColor: 0x374151, hairColor: 0x4b5563,
+      name: 'Elena', role: 'Citizen advocate', hasGlasses: false, hasCane: false
+    });
+
+    // 7. Yuki (At East Cafe Plaza at X: 52, Z: 26)
+    this.createCharacterNPC({
+      x: 52, z: 26,
+      shirtColor: 0xf59e0b, pantsColor: 0x1e293b, hairColor: 0x171717,
+      name: 'Yuki', role: 'Global Tourist', hasGlasses: false, hasCane: false
     });
   }
 
@@ -797,6 +814,50 @@ export class ThreeCityWorld {
     this.scene.add(group);
   }
 
+  private createKofiWheelchair(x: number, z: number) {
+    const group = new THREE.Group();
+    group.position.set(x, 0, z);
+
+    // 3D Nametag
+    const nametag = this.createNametagSprite('Kofi', 'Adaptive Commuter');
+    nametag.position.set(0, 4.4, 0);
+    group.add(nametag);
+
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xfcd34d });
+    const head = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), skinMat);
+    head.position.y = 2.6;
+    group.add(head);
+
+    const hair = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.4, 1.3), new THREE.MeshStandardMaterial({ color: 0x171717 }));
+    hair.position.y = 0.5;
+    head.add(hair);
+
+    const torsoMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6 });
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.3, 0.9), torsoMat);
+    torso.position.set(0, 1.5, -0.1);
+    group.add(torso);
+
+    // 3D Wheelchair Structure
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.7 });
+    const seat = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.3, 1.8), frameMat);
+    seat.position.set(0, 0.9, 0);
+    group.add(seat);
+
+    const back = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.6, 0.3), frameMat);
+    back.position.set(0, 1.7, -0.8);
+    group.add(back);
+
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0f172a });
+    [-1.05, 1.05].forEach(wx => {
+      const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 0.2, 16), wheelMat);
+      wheel.rotation.z = Math.PI / 2;
+      wheel.position.set(wx, 0.9, 0);
+      group.add(wheel);
+    });
+
+    this.scene.add(group);
+  }
+
   // ─── 6. 3D Moving Traffic (Buses, Taxis, Sedans, Vans) ───────────────────
 
   private createUrbanTraffic() {
@@ -946,6 +1007,7 @@ export class ThreeCityWorld {
     this.updatePedestrians();
     this.updateFountain(time);
     this.updateBirdsEyeCamera();
+    this.updateProximityPrompt();
 
     this.renderer.render(this.scene, this.camera);
   };
@@ -1205,30 +1267,78 @@ export class ThreeCityWorld {
   // ─── 10. Proximity NPC Interaction ───────────────────────────────────────
 
   private checkProximityInteraction() {
+    if (!this.playerGroup) return;
     const p = this.playerGroup.position;
     const npcs = [
-      { id: 'rahul', pos: new THREE.Vector3(-26, 0, 10) },
-      { id: 'fatima', pos: new THREE.Vector3(26, 0, 10) },
-      { id: 'grandma', pos: new THREE.Vector3(20, 0, 26) }
+      { id: 'rahul',   pos: new THREE.Vector3(-26, 0, 10) },
+      { id: 'fatima',  pos: new THREE.Vector3(66, 0, 10) },
+      { id: 'grandma', pos: new THREE.Vector3(20, 0, 26) },
+      { id: 'kofi',    pos: new THREE.Vector3(15, 0, -20) },
+      { id: 'elena',   pos: new THREE.Vector3(-15, 0, 26) },
+      { id: 'yuki',    pos: new THREE.Vector3(52, 0, 26) }
     ];
 
     for (const npc of npcs) {
-      if (p.distanceTo(npc.pos) < 6) {
+      if (p.distanceTo(npc.pos) < 6.0) {
         (window as any).audioService?.playSelect?.();
         gameStateManager.setCurrentCharacter(npc.id);
-
-        if (npc.id === 'fatima') {
-          eventBus.emit(GameEvents.DIALOGUE_NODE, {
-            id: 'fatima-bus-dialogue',
-            speaker: 'Fatima',
-            text: "I need to get to my interview on the other side of the city, but the bus schedule is so confusing...",
-            nextId: null,
-          });
-          return;
-        }
-
         dialogueManager.startDialogue(npc.id);
         return;
+      }
+    }
+  }
+
+  private updateProximityPrompt() {
+    if (this.isDestroyed || !this.playerGroup) return;
+    const p = this.playerGroup.position;
+    const npcs = [
+      { id: 'rahul',   name: 'Rahul',        pos: new THREE.Vector3(-26, 0, 10) },
+      { id: 'fatima',  name: 'Fatima',       pos: new THREE.Vector3(66, 0, 10) },
+      { id: 'grandma', name: 'Grandma Mira', pos: new THREE.Vector3(20, 0, 26) },
+      { id: 'kofi',    name: 'Kofi',         pos: new THREE.Vector3(15, 0, -20) },
+      { id: 'elena',   name: 'Elena',        pos: new THREE.Vector3(-15, 0, 26) },
+      { id: 'yuki',    name: 'Yuki',         pos: new THREE.Vector3(52, 0, 26) }
+    ];
+
+    let nearNpc: typeof npcs[0] | null = null;
+    for (const npc of npcs) {
+      if (p.distanceTo(npc.pos) < 6.0) {
+        nearNpc = npc;
+        break;
+      }
+    }
+
+    if (nearNpc) {
+      if (!this.promptElement) {
+        this.promptElement = document.createElement('div');
+        this.promptElement.id = 'three-proximity-prompt';
+        this.promptElement.style.cssText = `
+          position: absolute;
+          bottom: 120px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(15, 23, 42, 0.95);
+          border: 2px solid #fbbf24;
+          border-radius: 4px;
+          padding: 8px 16px;
+          color: #ffffff;
+          font-family: var(--font-pixel);
+          font-size: 11px;
+          z-index: 50;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+          pointer-events: none;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        `;
+        this.container.appendChild(this.promptElement);
+      }
+      this.promptElement.innerHTML = `<span style="color:#fbbf24; background:#2d2033; padding:2px 6px; border-radius:3px; border:1px solid #fbbf24;">E</span> TALK TO ${nearNpc.name.toUpperCase()}`;
+    } else {
+      if (this.promptElement) {
+        this.promptElement.remove();
+        this.promptElement = null;
       }
     }
   }
@@ -1237,6 +1347,8 @@ export class ThreeCityWorld {
     this.isDestroyed = true;
     if (this.animFrameId) cancelAnimationFrame(this.animFrameId);
     window.removeEventListener('resize', this.onResize);
+    this.promptElement?.remove();
+    this.promptElement = null;
     this.renderer.dispose();
     this.renderer.domElement.remove();
   }

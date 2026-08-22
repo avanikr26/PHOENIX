@@ -100,13 +100,14 @@ html, body {
   background: var(--color-bg);
 }
 
-/* Phaser Canvas Container */
+/* Phaser Canvas Container — z-index: 1 so it renders above Three.js background (z-index: 0) */
 #game-canvas-container {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
 }
 
 #game-canvas-container canvas {

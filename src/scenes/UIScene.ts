@@ -18,16 +18,21 @@ export class UIScene extends Phaser.Scene {
   private dialoguePanel: HTMLDivElement | null = null;
   private challengePanel: HTMLDivElement | null = null;
   private hudScoreBadge: HTMLDivElement | null = null;
+  private typewriterInterval: ReturnType<typeof setInterval> | null = null;
 
   // Accessibility flags
   private highContrastMode = false;
   private captioningMode = true;
+  private onKeyDownHandler: ((e: KeyboardEvent) => void) | null = null;
 
   constructor() {
     super({ key: 'UIScene', active: true });
   }
 
   create() {
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.shutdown();
+    });
     this.setupOverlay();
     this.createBottomActionBar();
     this.createTopHUDScore();
@@ -207,7 +212,7 @@ export class UIScene extends Phaser.Scene {
     });
 
     // ESC key opens Roblox Experience Menu
-    window.addEventListener('keydown', (e) => {
+    this.onKeyDownHandler = (e: KeyboardEvent) => {
       if (e.code === 'Escape') {
         this.showRobloxEscMenu();
       }
@@ -215,15 +220,65 @@ export class UIScene extends Phaser.Scene {
         const slot = parseInt(e.code.replace('Digit', ''));
         this.activateHotbarSlot(slot);
       }
-    });
+    };
+    window.addEventListener('keydown', this.onKeyDownHandler);
+  }
+
+  shutdown() {
+    if (this.onKeyDownHandler) {
+      window.removeEventListener('keydown', this.onKeyDownHandler);
+      this.onKeyDownHandler = null;
+    }
+    if (this.typewriterInterval) {
+      clearInterval(this.typewriterInterval);
+      this.typewriterInterval = null;
+    }
+    if (this.challengeTimerInterval) {
+      clearInterval(this.challengeTimerInterval);
+      this.challengeTimerInterval = null;
+    }
   }
 
   private updateHUDScore() {
     const scoreVal = document.getElementById('rbx-score-val');
     if (scoreVal) {
-      const score = gameStateManager.getState().totalScore || 1250;
+      const score = gameStateManager.getState().totalScore;
       scoreVal.textContent = `Score: ${score.toLocaleString()}`;
     }
+    const badgesVal = document.getElementById('rbx-badges-btn');
+    if (badgesVal) {
+      const count = gameStateManager.getState().unlockedBadgeIds.length;
+      badgesVal.innerHTML = `
+        <span>🏆</span>
+        <span id="rbx-badges-val" style="color:#f8fafc;">Badges: ${count}</span>
+      `;
+    }
+  }
+
+  private updateHUDVisibility() {
+    const currentScene = gameStateManager.getState().currentScene;
+    const hide = currentScene === 'TitleScene' || currentScene === 'BootScene';
+    if (this.hudScoreBadge) {
+      this.hudScoreBadge.style.display = hide ? 'none' : 'flex';
+    }
+    if (this.bottomBar) {
+      this.bottomBar.style.display = hide ? 'none' : 'flex';
+    }
+  }
+
+  private showBadgeUnlockToast(badgeId: string) {
+    const badgeNames: Record<string, { name: string; desc: string; icon: string }> = {
+      FIRST_FIX: { name: 'First Accessibility Fix', desc: 'Eliminated your first digital product accessibility barrier!', icon: '🏆' },
+      VISUAL_ACCESSIBILITY: { name: 'Visual Accessibility Master', desc: 'Cleared all visual and screen-reader accessibility barriers!', icon: '👁️' },
+      INCLUSIVE_AUDIO: { name: 'Inclusive Audio Champion', desc: 'Resolved all hearing and sound indicator barriers!', icon: '🔊' },
+      COLOR_CRUSHER: { name: 'Color-Aware Designer', desc: 'Completed Grandma Mira\'s color-blind design challenges!', icon: '🎨' },
+      KEYBOARD_KNIGHT: { name: 'Keyboard/Motor Knight', desc: 'Restored logical tab order and visible keyboard focus!', icon: '⌨️' },
+      CLEAR_THINKER: { name: 'Cognitive Clarity Advocate', desc: 'Made forms and workflows clear for cognitive accessibility!', icon: '🧠' },
+      INCLUSIVE_ARCHITECT: { name: 'Accessibility Architect', desc: 'Achieved mastery level across Access City districts!', icon: '🏛️' },
+      ZERO_EXCLUSION: { name: 'Zero Exclusion Legend', desc: 'Successfully served 10,000 citizens in the final simulation!', icon: '👑' }
+    };
+    const info = badgeNames[badgeId] || { name: badgeId, desc: 'Achievement unlocked!', icon: '🏆' };
+    this.showRobloxBadgeToast(info.name.toUpperCase(), info.desc, info.icon);
   }
 
   // ─── 2. Roblox Bottom Backpack / Hotbar System ───────────────────────────
@@ -526,6 +581,12 @@ export class UIScene extends Phaser.Scene {
 
     eventBus.on(GameEvents.STATE_UPDATED, () => {
       this.updateHUDScore();
+      this.updateHUDVisibility();
+    });
+
+    eventBus.on('game:badge-unlocked', (badgeId: string) => {
+      this.showBadgeUnlockToast(badgeId);
+      this.updateHUDScore();
     });
   }
 
@@ -534,6 +595,11 @@ export class UIScene extends Phaser.Scene {
   private showDialogue(node: DialogueNode) {
     this.clearFeedback();
     this.clearChallenge();
+
+    if (this.typewriterInterval) {
+      clearInterval(this.typewriterInterval);
+      this.typewriterInterval = null;
+    }
 
     if (!this.dialoguePanel) {
       this.dialoguePanel = this.createDialoguePanel();
@@ -555,16 +621,22 @@ export class UIScene extends Phaser.Scene {
     speakerTag.style.background = accentColor.bg;
     speakerTag.style.borderColor = accentColor.border;
 
+    // Trigger TTS speak (Web Speech API)
+    (window as any).audioService?.speak?.(node.text, speaker);
+
     // Typewriter effect
     textBox.textContent = '';
     let charIdx = 0;
     const text = node.text;
-    const typeInterval = setInterval(() => {
+    this.typewriterInterval = setInterval(() => {
       if (charIdx < text.length) {
         textBox.textContent += text[charIdx++];
-        (window as any).audioService?.playBlip?.();
+        // Skip playing blips if TTS is running/active to avoid noise overlapping
       } else {
-        clearInterval(typeInterval);
+        if (this.typewriterInterval) {
+          clearInterval(this.typewriterInterval);
+          this.typewriterInterval = null;
+        }
       }
     }, 24);
 
@@ -1634,10 +1706,17 @@ export class UIScene extends Phaser.Scene {
     // Calculate accessibility percentage score
     const totalImps = 4;
     let activeImps = 0;
-    if (improvements.ariaLabels) activeImps++;
-    if (improvements.captions) activeImps++;
-    if (improvements.colorIndicators) activeImps++;
-    if (improvements.largerTargets) activeImps++;
+    
+    // Normalize both camelCase and kebab-case or alternate names for improvements keys
+    const hasAria = improvements.ariaLabels || improvements['aria-labels'] || improvements.semanticLabels;
+    const hasCaptions = improvements.captions || improvements['captions'];
+    const hasColor = improvements.colorIndicators || improvements['color-indicators'] || improvements.colorIndependentIndicators;
+    const hasLarger = improvements.largerTargets || improvements['larger-targets'];
+
+    if (hasAria) activeImps++;
+    if (hasCaptions) activeImps++;
+    if (hasColor) activeImps++;
+    if (hasLarger) activeImps++;
 
     const rating = Math.round((activeImps / totalImps) * 100);
 
@@ -1691,12 +1770,12 @@ export class UIScene extends Phaser.Scene {
           ">
             <span>CityCare Hospital</span>
             <span style="font-size: 9px; font-weight: normal;">
-              Subtitles: ${improvements.captions ? 'ON (CC)' : 'OFF'}
+              Subtitles: ${hasCaptions ? 'ON (CC)' : 'OFF'}
             </span>
           </div>
 
           <!-- Labeled or Unlabeled Fields -->
-          ${improvements.ariaLabels 
+          ${hasAria 
             ? `
               <div style="margin-bottom: 10px;">
                 <label style="display:block; font-size:11px; font-weight:bold; color:#1e3a8a; margin-bottom:4px;">Date of Appointment *</label>
@@ -1711,7 +1790,7 @@ export class UIScene extends Phaser.Scene {
           }
 
           <!-- Labeled or Unlabeled Time Selection -->
-          ${improvements.ariaLabels 
+          ${hasAria 
             ? `
               <div style="margin-bottom: 12px;">
                 <label style="display:block; font-size:11px; font-weight:bold; color:#1e3a8a; margin-bottom:4px;">Time Slot *</label>
@@ -1728,7 +1807,7 @@ export class UIScene extends Phaser.Scene {
           <!-- Status Indicator -->
           <div style="margin-bottom: 14px; display:flex; align-items:center; gap:8px;">
             <span style="font-size:10px; font-weight:bold;">Status:</span>
-            ${improvements.colorIndicators 
+            ${hasColor 
               ? `<span style="background:#bbf7d0; color:#14532d; padding:2px 8px; border-radius:3px; font-size:10px; font-weight:bold; display:flex; align-items:center; gap:4px;">✓ Available</span>`
               : `<span style="display:inline-block; width:12px; height:12px; border-radius:50%; background:#22c55e;" title="Green dot status"></span>`
             }
@@ -1742,9 +1821,9 @@ export class UIScene extends Phaser.Scene {
               color: #ffffff;
               border: none;
               border-radius: 4px;
-              padding: ${improvements.largerTargets ? '10px' : '4px'};
+              padding: ${hasLarger ? '10px' : '4px'};
               font-family: var(--font-pixel);
-              font-size: ${improvements.largerTargets ? '10px' : '7.5px'};
+              font-size: ${hasLarger ? '10px' : '7.5px'};
               cursor: pointer;
             ">CONFIRM APPOINTMENT</button>
           </div>
@@ -1797,9 +1876,12 @@ export class UIScene extends Phaser.Scene {
   private getCharacterPortraitSVG(speaker: string, mood: CharacterMood, size: number): string {
     const s = speaker.toLowerCase();
     if (s.includes('fatima')) return PortraitAssets.getFatimaSVG(mood, size);
-    if (s.includes('ava')) return PortraitAssets.getAvaSVG(size);
+    if (s.includes('ava') || s.includes('player')) return PortraitAssets.getAvaSVG(size);
     if (s.includes('rahul')) return PortraitAssets.getRahulSVG(size);
     if (s.includes('grandma') || s.includes('mira')) return PortraitAssets.getGrandmaSVG(size);
+    if (s.includes('kofi')) return PortraitAssets.getKofiSVG(size);
+    if (s.includes('elena')) return PortraitAssets.getElenaSVG(size);
+    if (s.includes('yuki')) return PortraitAssets.getYukiSVG(size);
     return PortraitAssets.getAvaSVG(size);
   }
 
@@ -1809,13 +1891,22 @@ export class UIScene extends Phaser.Scene {
     if (s.includes('ava')) return { bg: '#065f46', border: '#10b981' };
     if (s.includes('rahul')) return { bg: '#1e3a8a', border: '#60a5fa' };
     if (s.includes('grandma') || s.includes('mira')) return { bg: '#b45309', border: '#f59e0b' };
+    if (s.includes('kofi')) return { bg: '#1e40af', border: '#60a5fa' };
+    if (s.includes('elena')) return { bg: '#065f46', border: '#34d399' };
+    if (s.includes('yuki')) return { bg: '#854d0e', border: '#facc15' };
     return { bg: '#1e293b', border: '#64748b' };
   }
 
   private getCharDisplayName(characterId: string): string {
     const map: Record<string, string> = {
-      rahul: 'Rahul', fatima: 'Fatima', grandma: 'Grandma Mira', ava: 'Ava',
+      rahul: 'Rahul',
+      fatima: 'Fatima',
+      grandma: 'Grandma Mira',
+      ava: 'Ava',
+      kofi: 'Kofi',
+      elena: 'Elena',
+      yuki: 'Yuki',
     };
-    return map[characterId] ?? characterId;
+    return map[characterId] ?? (characterId.charAt(0).toUpperCase() + characterId.slice(1));
   }
 }

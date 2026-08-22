@@ -153,6 +153,8 @@ export interface PlayerProfile {
     shirt: string;
     skin: string;
   };
+  email?: string;
+  password?: string;
 }
 
 export interface FinalSimulationResult {
