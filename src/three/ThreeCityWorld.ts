@@ -961,7 +961,11 @@ export class ThreeCityWorld {
   private setupInput() {
     window.addEventListener('keydown', (e) => {
       this.keys[e.code] = true;
-      if (e.code === 'KeyE') this.checkProximityInteraction();
+      if (e.code === 'KeyE') {
+        if (!dialogueManager.getCurrentNode()) {
+          this.checkProximityInteraction();
+        }
+      }
     });
 
     window.addEventListener('keyup', (e) => {
@@ -1045,6 +1049,11 @@ export class ThreeCityWorld {
 
   private updatePlayer(delta: number, time: number) {
     if (!this.playerGroup) return;
+
+    if (dialogueManager.getCurrentNode()) {
+      this.keys = {};
+      this.playerVelocity.set(0, this.playerVelocity.y, 0);
+    }
 
     // Cap delta for frame spikes
     const dt = Math.min(delta, 0.05);

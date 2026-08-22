@@ -56,6 +56,7 @@ export class CityScene extends Phaser.Scene {
   private readonly INTERACT_RADIUS = 68;
   private nearbyCharacterId: string | null = null;
   private controlsLocked = false;
+  private promptElement: HTMLDivElement | null = null;
 
   // Depth Layers
   private readonly DEPTH_BG        = 0;
@@ -161,6 +162,10 @@ export class CityScene extends Phaser.Scene {
   shutdown() {
     this.threeWorld?.destroy();
     this.threeWorld = null;
+    if (this.promptElement) {
+      this.promptElement.remove();
+      this.promptElement = null;
+    }
   }
 
   // ─── 1. City Ground & Road Network ───────────────────────────────────────
@@ -638,14 +643,32 @@ export class CityScene extends Phaser.Scene {
         left:  this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
         right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D),
       };
-      this.input.keyboard.on('keydown-E',     () => this.tryInteract());
-      this.input.keyboard.on('keydown-ENTER', () => this.tryInteract());
-      this.input.keyboard.on('keydown-SPACE', () => this.tryInteract());
+      this.input.keyboard.on('keydown-E', () => {
+        if (!dialogueManager.getCurrentNode()) {
+          this.tryInteract();
+        }
+      });
+      this.input.keyboard.on('keydown-ENTER', () => {
+        if (!dialogueManager.getCurrentNode()) {
+          this.tryInteract();
+        }
+      });
+      this.input.keyboard.on('keydown-SPACE', () => {
+        if (!dialogueManager.getCurrentNode()) {
+          this.tryInteract();
+        }
+      });
     }
   }
 
   update() {
-    if (this.controlsLocked) return;
+    if (this.controlsLocked || dialogueManager.getCurrentNode()) {
+      if (this.promptElement) {
+        this.promptElement.remove();
+        this.promptElement = null;
+      }
+      return;
+    }
 
     // 1. Move Player
     const speed = 3.2;
@@ -653,29 +676,22 @@ export class CityScene extends Phaser.Scene {
     const minY = 135;
     const maxY = height - 50;
 
-    let moved = false;
-
     if (this.cursors?.left?.isDown  || this.wasd?.left?.isDown) {
       this.player.x = Math.max(20, this.player.x - speed);
       this.player.setFlipX(true);
-      moved = true;
     } else if (this.cursors?.right?.isDown || this.wasd?.right?.isDown) {
       this.player.x = Math.min(width - 20, this.player.x + speed);
       this.player.setFlipX(false);
-      moved = true;
     }
 
     if (this.cursors?.up?.isDown   || this.wasd?.up?.isDown) {
       this.player.y = Math.max(minY, this.player.y - speed);
-      moved = true;
     } else if (this.cursors?.down?.isDown  || this.wasd?.down?.isDown) {
       this.player.y = Math.min(maxY, this.player.y + speed);
-      moved = true;
     }
 
-    if (moved) {
-      this.checkNearbyNPCs();
-    }
+    // Call checkNearbyNPCs on every frame to instantly update "E - Talk" proximity prompts
+    this.checkNearbyNPCs();
 
     // 2. Animate Traffic Loops
     for (const v of this.vehicles) {
@@ -690,15 +706,16 @@ export class CityScene extends Phaser.Scene {
 
   private checkNearbyNPCs() {
     const npcs = [
-      { id: 'rahul',   sprite: this.rahulNPC },
-      { id: 'fatima',  sprite: this.fatimaNPC },
-      { id: 'grandma', sprite: this.grandmaNPC },
-      { id: 'kofi',    sprite: this.kofiNPC },
-      { id: 'elena',   sprite: this.elenaNPC },
-      { id: 'yuki',    sprite: this.yukiNPC },
+      { id: 'rahul',   sprite: this.rahulNPC, name: 'Rahul' },
+      { id: 'fatima',  sprite: this.fatimaNPC, name: 'Fatima' },
+      { id: 'grandma', sprite: this.grandmaNPC, name: 'Grandma Mira' },
+      { id: 'kofi',    sprite: this.kofiNPC, name: 'Kofi' },
+      { id: 'elena',   sprite: this.elenaNPC, name: 'Elena' },
+      { id: 'yuki',    sprite: this.yukiNPC, name: 'Yuki' },
     ];
 
     let found: string | null = null;
+    let foundNpcName: string = '';
     for (const npc of npcs) {
       if (!npc.sprite) continue;
       const dist = Phaser.Math.Distance.Between(
@@ -707,11 +724,58 @@ export class CityScene extends Phaser.Scene {
       );
       if (dist < this.INTERACT_RADIUS) {
         found = npc.id;
+        foundNpcName = npc.name;
         break;
       }
     }
 
     this.nearbyCharacterId = found;
+    this.updateProximityPrompt2D(foundNpcName);
+  }
+
+  private updateProximityPrompt2D(npcName: string) {
+    if (dialogueManager.getCurrentNode()) {
+      if (this.promptElement) {
+        this.promptElement.remove();
+        this.promptElement = null;
+      }
+      return;
+    }
+
+    const root = document.getElementById('dom-overlay') ?? document.body;
+    if (npcName) {
+      if (!this.promptElement) {
+        this.promptElement = document.createElement('div');
+        this.promptElement.id = 'phaser-proximity-prompt';
+        this.promptElement.style.cssText = `
+          position: absolute;
+          bottom: 120px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(15, 23, 42, 0.95);
+          border: 2px solid #fbbf24;
+          border-radius: 4px;
+          padding: 8px 16px;
+          color: #ffffff;
+          font-family: var(--font-pixel);
+          font-size: 11px;
+          z-index: 50;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+          pointer-events: none;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        `;
+        root.appendChild(this.promptElement);
+      }
+      this.promptElement.innerHTML = `<span style="color:#fbbf24; background:#2d2033; padding:2px 6px; border-radius:3px; border:1px solid #fbbf24;">E</span> TALK TO ${npcName.toUpperCase()}`;
+    } else {
+      if (this.promptElement) {
+        this.promptElement.remove();
+        this.promptElement = null;
+      }
+    }
   }
 
   private tryInteract() {

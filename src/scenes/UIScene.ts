@@ -24,6 +24,7 @@ export class UIScene extends Phaser.Scene {
   private highContrastMode = false;
   private captioningMode = true;
   private onKeyDownHandler: ((e: KeyboardEvent) => void) | null = null;
+  private lastDialogueAdvanceTime = 0;
 
   constructor() {
     super({ key: 'UIScene', active: true });
@@ -219,6 +220,9 @@ export class UIScene extends Phaser.Scene {
       if (['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].includes(e.code)) {
         const slot = parseInt(e.code.replace('Digit', ''));
         this.activateHotbarSlot(slot);
+      }
+      if (e.code === 'Enter' || e.code === 'NumpadEnter') {
+        this.handleDialogueEnterPress();
       }
     };
     window.addEventListener('keydown', this.onKeyDownHandler);
@@ -778,11 +782,51 @@ export class UIScene extends Phaser.Scene {
       </div>
     `;
 
-    panel.querySelector('.bouncing-arrow')?.addEventListener('click', () => {
-      dialogueManager.advance();
+    panel.querySelector('#vn-dialogue-frame')?.addEventListener('click', () => {
+      this.handleDialogueEnterPress();
     });
 
+    const frame = panel.querySelector('#vn-dialogue-frame') as HTMLElement;
+    if (frame) {
+      frame.style.cursor = 'pointer';
+    }
+
     return panel;
+  }
+
+  private handleDialogueEnterPress() {
+    const now = Date.now();
+    if (now - this.lastDialogueAdvanceTime < 250) {
+      return; // 250ms debounce/cooldown to prevent accidental multiple advances
+    }
+
+    const currentNode = dialogueManager.getCurrentNode();
+    if (!currentNode) return;
+
+    this.lastDialogueAdvanceTime = now;
+
+    // Check if typewriter is typing
+    if (this.typewriterInterval) {
+      // Skip typewriter to show full text
+      clearInterval(this.typewriterInterval);
+      this.typewriterInterval = null;
+      const textBox = this.dialoguePanel?.querySelector('#vn-dialogue-text') as HTMLDivElement;
+      if (textBox) {
+        textBox.textContent = currentNode.text;
+      }
+      // Trigger select sound
+      (window as any).audioService?.playSelect?.();
+    } else {
+      // Check if challenge button is visible. If so, press it to start challenge
+      const challengeBtn = document.getElementById('vn-challenge-trigger-btn');
+      if (challengeBtn) {
+        (window as any).audioService?.playSelect?.();
+        challengeBtn.click();
+      } else {
+        (window as any).audioService?.playSelect?.();
+        dialogueManager.advance();
+      }
+    }
   }
 
   // ─── Challenge Interface (Design Scenario - Image 1 top-right) ────────────
