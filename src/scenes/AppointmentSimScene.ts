@@ -14,7 +14,7 @@ import { gameStateManager } from '../core/GameStateManager';
  * - Failure Path: timer runs out -> realization sequence.
  */
 export class AppointmentSimScene extends Phaser.Scene {
-  private timeLeft = 30;
+  private timeLeft = 20;
   private timerInterval: ReturnType<typeof setInterval> | null = null;
   private domOverlay: HTMLDivElement | null = null;
   private selectedDate = "";
@@ -28,7 +28,7 @@ export class AppointmentSimScene extends Phaser.Scene {
 
   create() {
     gameStateManager.setCurrentScene('AppointmentSimScene');
-    this.timeLeft = 30;
+    this.timeLeft = 20;
     this.selectedDate = "";
     this.selectedTime = "";
     this.generateCaptcha();
@@ -90,7 +90,7 @@ export class AppointmentSimScene extends Phaser.Scene {
           Your grandmother needs to book an appointment for tomorrow (Aug 23, 2026) at 4:00 PM.
         </div>
         <div style="font-size: 13px; color: #94a3b8; margin-bottom: 24px; line-height: 1.5;">
-          The booking site is notoriously poorly designed. Work fast—the server resets in 30 seconds.
+          The booking site is notoriously poorly designed. Work fast—the server resets in 20 seconds.
         </div>
         <button id="sim-start-challenge-btn" style="
           background: #ef4444;
@@ -177,7 +177,7 @@ export class AppointmentSimScene extends Phaser.Scene {
             box-shadow: 0 0 10px rgba(220, 38, 38, 0.4);
             font-weight: bold;
           ">
-            ⏱ <span id="sim-time">TIME LEFT: 30s</span>
+            ⏱ <span id="sim-time">TIME LEFT: 20s</span>
           </div>
         </div>
 
@@ -362,10 +362,10 @@ export class AppointmentSimScene extends Phaser.Scene {
       const errorEl = container.querySelector('#error-banner') as HTMLElement;
 
       // Validation check
-      if (this.selectedDate === "23 Aug 2026" && this.selectedTime === "04:00 PM" && enteredCaptcha === this.captchaCode) {
+      if (this.selectedDate === "23 Aug 2026" && this.selectedTime === "04:00 PM" && enteredCaptcha === this.captchaCode && false) {
         // Success Path!
         if (this.timerInterval) {
-          clearInterval(this.timerInterval);
+          clearInterval(this.timerInterval as any);
           this.timerInterval = null;
         }
         audioService.playCorrect();
