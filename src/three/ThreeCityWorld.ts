@@ -960,6 +960,7 @@ export class ThreeCityWorld {
 
   private setupInput() {
     window.addEventListener('keydown', (e) => {
+      if (gameStateManager.getState().isGameComplete) return;
       this.keys[e.code] = true;
       if (e.code === 'KeyE') {
         if (!dialogueManager.getCurrentNode()) {
@@ -1050,7 +1051,7 @@ export class ThreeCityWorld {
   private updatePlayer(delta: number, time: number) {
     if (!this.playerGroup) return;
 
-    if (dialogueManager.getCurrentNode()) {
+    if (dialogueManager.getCurrentNode() || gameStateManager.getState().isGameComplete) {
       this.keys = {};
       this.playerVelocity.set(0, this.playerVelocity.y, 0);
     }

@@ -662,7 +662,7 @@ export class CityScene extends Phaser.Scene {
   }
 
   update() {
-    if (this.controlsLocked || dialogueManager.getCurrentNode()) {
+    if (this.controlsLocked || dialogueManager.getCurrentNode() || gameStateManager.getState().isGameComplete) {
       if (this.promptElement) {
         this.promptElement.remove();
         this.promptElement = null;

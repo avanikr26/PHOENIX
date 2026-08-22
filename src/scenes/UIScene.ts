@@ -25,6 +25,8 @@ export class UIScene extends Phaser.Scene {
   private captioningMode = true;
   private onKeyDownHandler: ((e: KeyboardEvent) => void) | null = null;
   private lastDialogueAdvanceTime = 0;
+  private globalGameTimerSeconds = 600; // 10 minutes
+  private globalTimerInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     super({ key: 'UIScene', active: true });
@@ -38,6 +40,7 @@ export class UIScene extends Phaser.Scene {
     this.createBottomActionBar();
     this.createTopHUDScore();
     this.listenToEvents();
+    this.startGlobalGameTimer();
   }
 
   // ─── Setup Overlay & HUD ──────────────────────────────────────────────────
@@ -126,6 +129,23 @@ export class UIScene extends Phaser.Scene {
         ">
           <span style="color:#fbbf24;">★</span>
           <span id="rbx-score-val">Score: 1,250</span>
+        </div>
+
+        <!-- Global Timer Badge -->
+        <div id="rbx-global-timer" style="
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(30, 41, 59, 0.8);
+          border: 1px solid rgba(239, 68, 68, 0.4);
+          border-radius: 6px;
+          padding: 4px 12px;
+          color: #f8fafc;
+          font-size: 12px;
+          font-weight: 600;
+        ">
+          <span style="color:#ef4444;">⏱</span>
+          <span id="rbx-timer-val">Time: 10:00</span>
         </div>
       </div>
 
@@ -587,11 +607,13 @@ export class UIScene extends Phaser.Scene {
     eventBus.on(GameEvents.STATE_UPDATED, () => {
       this.updateHUDScore();
       this.updateHUDVisibility();
+      this.checkEndGameConditions();
     });
 
     eventBus.on('game:badge-unlocked', (badgeId: string) => {
       this.showBadgeUnlockToast(badgeId);
       this.updateHUDScore();
+      this.checkEndGameConditions();
     });
   }
 
@@ -1962,5 +1984,189 @@ export class UIScene extends Phaser.Scene {
       yuki: 'Yuki',
     };
     return map[characterId] ?? (characterId.charAt(0).toUpperCase() + characterId.slice(1));
+  }
+
+  private checkEndGameConditions() {
+    if (gameStateManager.getState().isGameComplete) return;
+    const score = gameStateManager.getState().totalScore;
+    if (score >= 1000) {
+      this.triggerEndGame(true); // Win
+    }
+  }
+
+  private startGlobalGameTimer() {
+    if (this.globalTimerInterval) {
+      clearInterval(this.globalTimerInterval);
+    }
+    this.globalGameTimerSeconds = 600; // 10 minutes
+    this.globalTimerInterval = setInterval(() => {
+      const state = gameStateManager.getState();
+      if (state.currentScene === 'TitleScene' || state.currentScene === 'BootScene') {
+        return;
+      }
+      if (state.isGameComplete) {
+        if (this.globalTimerInterval) {
+          clearInterval(this.globalTimerInterval);
+          this.globalTimerInterval = null;
+        }
+        return;
+      }
+
+      this.globalGameTimerSeconds--;
+
+      const timerValEl = document.getElementById('rbx-timer-val');
+      if (timerValEl) {
+        const mins = Math.floor(this.globalGameTimerSeconds / 60);
+        const secs = this.globalGameTimerSeconds % 60;
+        timerValEl.textContent = `Time: ${mins}:${String(secs).padStart(2, '0')}`;
+      }
+
+      this.checkEndGameConditions();
+
+      if (this.globalGameTimerSeconds <= 0) {
+        this.triggerEndGame(false); // Timeout
+      }
+    }, 1000);
+  }
+
+  private triggerEndGame(isWin: boolean) {
+    if (this.globalTimerInterval) {
+      clearInterval(this.globalTimerInterval);
+      this.globalTimerInterval = null;
+    }
+    this.stopTimer();
+
+    gameStateManager.setGameComplete(true);
+
+    if (isWin) {
+      (window as any).audioService?.playCorrect?.();
+    } else {
+      (window as any).audioService?.playGlitch?.();
+    }
+
+    this.clearChallenge();
+    this.clearFeedback();
+    this.hideDialogue();
+
+    const root = document.getElementById('dom-overlay') ?? document.body;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'end-game-overlay';
+    overlay.style.cssText = `
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 15, 29, 0.95);
+      backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      font-family: Inter, system-ui, sans-serif;
+      color: #f8fafc;
+      pointer-events: auto;
+      animation: fadeInEnd 0.6s ease-out;
+    `;
+
+    if (!document.getElementById('end-game-style')) {
+      const style = document.createElement('style');
+      style.id = 'end-game-style';
+      style.textContent = `
+        @keyframes fadeInEnd {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes scaleUpEnd {
+          from { transform: scale(0.9) translateY(20px); opacity: 0; }
+          to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    const score = gameStateManager.getState().totalScore;
+
+    const winContent = `
+      <div style="font-size: 52px; margin-bottom: 16px;">🎉</div>
+      <div style="font-family: var(--font-pixel); font-size: 16px; color: #fbbf24; margin-bottom: 8px; letter-spacing: 2px;">
+        CONGRATULATIONS!
+      </div>
+      <div style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 24px;">
+        You scored ${score} points!
+      </div>
+      <div style="
+        font-size: 15px;
+        line-height: 1.6;
+        color: #cbd5e1;
+        margin-bottom: 32px;
+        max-width: 440px;
+        margin-left: auto;
+        margin-right: auto;
+        font-weight: 500;
+      ">
+        We hope you learned a lot — because the best interfaces aren't designed for the average user. They're designed for everyone.
+      </div>
+    `;
+
+    const timeoutContent = `
+      <div style="font-size: 52px; margin-bottom: 16px;">⏰</div>
+      <div style="font-family: var(--font-pixel); font-size: 16px; color: #ef4444; margin-bottom: 8px; letter-spacing: 2px;">
+        OHHOO... TIME'S UP!
+      </div>
+      <div style="font-size: 20px; font-weight: 700; color: #ffffff; margin-bottom: 24px;">
+        Well tried!
+      </div>
+      <div style="
+        font-size: 15px;
+        line-height: 1.6;
+        color: #cbd5e1;
+        margin-bottom: 32px;
+        max-width: 440px;
+        margin-left: auto;
+        margin-right: auto;
+        font-weight: 500;
+      ">
+        We hope you learned a lot — and that you'll design with everyone in mind.
+        <br><br>
+        <span style="color: #fbbf24; font-weight: 600;">Accessibility starts with empathy.</span>
+      </div>
+    `;
+
+    overlay.innerHTML = `
+      <div style="
+        background: #1e293b;
+        border: 3px solid ${isWin ? '#fbbf24' : '#ef4444'};
+        border-radius: 12px;
+        padding: 40px;
+        max-width: 520px;
+        width: calc(100% - 40px);
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 40px ${isWin ? 'rgba(251,191,36,0.1)' : 'rgba(239,68,68,0.1)'};
+        animation: scaleUpEnd 0.5s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      ">
+        ${isWin ? winContent : timeoutContent}
+
+        <button id="end-restart-btn" style="
+          background: ${isWin ? '#fbbf24' : '#ef4444'};
+          color: #0f172a;
+          border: none;
+          border-radius: 6px;
+          padding: 12px 32px;
+          font-family: var(--font-pixel);
+          font-size: 11px;
+          font-weight: bold;
+          cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 4px 14px ${isWin ? 'rgba(251, 191, 36, 0.4)' : 'rgba(239, 68, 68, 0.4)'};
+        ">RESTART EXPERIENCE</button>
+      </div>
+    `;
+
+    root.appendChild(overlay);
+
+    overlay.querySelector('#end-restart-btn')?.addEventListener('click', () => {
+      (window as any).audioService?.playSelect?.();
+      gameStateManager.resetState();
+      window.location.reload();
+    });
   }
 }
