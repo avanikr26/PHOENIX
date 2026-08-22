@@ -808,7 +808,7 @@ export class OpeningScene extends Phaser.Scene {
             Book a doctor's appointment for tomorrow at 4 PM.
           </div>
           <div style="color: #94a3b8; font-size: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; letter-spacing: 1px;">
-            ⏱ 30 SECONDS LIMIT
+            ⏱ 20 SECONDS LIMIT
           </div>
         </div>
 
