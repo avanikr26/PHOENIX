@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inclusive Interface — Access City</title>
+    <meta name="description" content="A pixel-art narrative RPG that teaches inclusive digital design through accessibility challenges in an ordinary fictional city." />
+    <meta name="theme-color" content="#1a1a2e" />
+
+    <!-- Google Fonts: Pixel + Readable -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- NES.CSS — retro pixel UI components -->
+    <link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet">
+
+    <!-- Project styles -->
+    <script type="module" crossorigin src="/assets/index-BbnSspYX.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Cneq6g2q.css">
+  </head>
+  <body>
+    <!-- Root game wrapper — fills the browser window -->
+    <div id="game-root" role="main" aria-label="Access City — Inclusive Interface">
+
+      <!-- Phaser canvas mounts here -->
+      <div id="game-canvas-container" aria-hidden="true"></div>
+
+      <!-- DOM overlay for visual novel UI, challenge panels etc. -->
+      <!-- pointer-events: none by default; individual interactive children set pointer-events: auto -->
+      <div id="dom-overlay" role="region" aria-label="Game UI Overlay"></div>
+
+    </div>
+
+    <!-- Skip to main content link for keyboard/screen-reader users -->
+    <a href="#dom-overlay" class="skip-link">Skip to game UI</a>
+
+  </body>
+</html>
