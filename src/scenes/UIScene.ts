@@ -817,15 +817,13 @@ export class UIScene extends Phaser.Scene {
       // Trigger select sound
       (window as any).audioService?.playSelect?.();
     } else {
-      // Check if challenge button is visible. If so, press it to start challenge
+      // If the challenge button is visible, ignore Enter/clicks on frame to force direct mouse selection of the challenge
       const challengeBtn = document.getElementById('vn-challenge-trigger-btn');
       if (challengeBtn) {
-        (window as any).audioService?.playSelect?.();
-        challengeBtn.click();
-      } else {
-        (window as any).audioService?.playSelect?.();
-        dialogueManager.advance();
+        return;
       }
+      (window as any).audioService?.playSelect?.();
+      dialogueManager.advance();
     }
   }
 
