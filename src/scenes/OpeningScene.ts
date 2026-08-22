@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { audioService } from '../services/AudioService';
 import { gameStateManager } from '../core/GameStateManager';
 import { ThreeDevRoom } from '../three/ThreeDevRoom';
+import { supabaseClient } from '../core/SupabaseClient';
 
 export class OpeningScene extends Phaser.Scene {
   private domOverlay: HTMLDivElement | null = null;
@@ -174,7 +175,7 @@ export class OpeningScene extends Phaser.Scene {
     });
 
     // Create Profile CTA click handler
-    this.domOverlay.querySelector('#create-profile-btn')?.addEventListener('click', () => {
+    this.domOverlay.querySelector('#create-profile-btn')?.addEventListener('click', async () => {
       audioService.playSelect();
 
       const name = nameInput.value.trim();
@@ -201,6 +202,64 @@ export class OpeningScene extends Phaser.Scene {
         errorBanner.style.display = 'block';
         errorBanner.textContent = 'Error: Password must meet all strong requirements.';
         return;
+      }
+
+      // If Supabase is connected, attempt register or login
+      if (supabaseClient) {
+        const btn = this.domOverlay?.querySelector('#create-profile-btn') as HTMLButtonElement;
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'CREATING PROFILE...';
+        }
+
+        try {
+          // Attempt sign up
+          const { error } = await supabaseClient.auth.signUp({
+            email,
+            password,
+            options: {
+              data: {
+                display_name: name
+              }
+            }
+          });
+
+          if (error) {
+            // Check if user is already registered. If so, attempt login with same credentials
+            if (error.message.toLowerCase().includes('already') || error.message.toLowerCase().includes('exists')) {
+              const { error: logError } = await supabaseClient.auth.signInWithPassword({
+                email,
+                password
+              });
+
+              if (logError) {
+                if (btn) {
+                  btn.disabled = false;
+                  btn.textContent = 'CREATE PROFILE';
+                }
+                errorBanner.style.display = 'block';
+                errorBanner.textContent = `Error: ${logError.message}`;
+                return;
+              }
+            } else {
+              if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'CREATE PROFILE';
+              }
+              errorBanner.style.display = 'block';
+              errorBanner.textContent = `Error: ${error.message}`;
+              return;
+            }
+          }
+        } catch (err: any) {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'CREATE PROFILE';
+          }
+          errorBanner.style.display = 'block';
+          errorBanner.textContent = `Error: ${err.message || 'Supabase connection failed'}`;
+          return;
+        }
       }
 
       // Save profile in state (existing architecture fallback/storage)
