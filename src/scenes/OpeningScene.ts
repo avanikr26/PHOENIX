@@ -328,6 +328,47 @@ export class OpeningScene extends Phaser.Scene {
 
 
   private run3DRoomCinematic() {
+    // 1. Create a beautiful fullscreen bold welcome splash overlay to fill the page initially
+    const splash = document.createElement('div');
+    splash.id = 'welcome-splash-overlay';
+    splash.style.cssText = `
+      position: fixed;
+      inset: 0;
+      background: #0a0a14;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 998;
+      font-family: var(--font-pixel);
+      color: #ffffff;
+      pointer-events: none;
+      transition: opacity 1.0s ease-out;
+    `;
+    splash.innerHTML = `
+      <div style="text-align: center; display:flex; flex-direction:column; gap:20px; max-width:600px; padding:24px;">
+        <h1 style="font-size: clamp(24px, 5.5vw, 42px); line-height: 1.25; letter-spacing: 2px; color: #fbbf24; text-shadow: 0 0 25px rgba(251, 191, 36, 0.6); margin:0; font-weight:bold;">
+          WELCOME TO<br>ACCESS CITY
+        </h1>
+        <p style="font-family: var(--font-body); font-size: 16px; color: #cbd5e1; font-weight: 600; letter-spacing: 0.5px; opacity: 0.8; margin:0; animation: pulseIntro 1.5s infinite alternate;">
+          Initiating 3D Experience...
+        </p>
+      </div>
+      <style>
+        @keyframes pulseIntro {
+          from { opacity: 0.4; }
+          to { opacity: 0.9; }
+        }
+      </style>
+    `;
+    document.getElementById('game-root')?.appendChild(splash);
+
+    // Fade out splash screen after 2.5 seconds
+    setTimeout(() => {
+      splash.style.opacity = '0';
+      setTimeout(() => splash.remove(), 1000);
+    }, 2500);
+
     // Attempt to initialize the 3D DevRoom cinematic.
     // If it fails or takes too long, fall back immediately to Grandma dialogue.
     let cinematicDone = false;

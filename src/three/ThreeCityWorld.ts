@@ -91,7 +91,7 @@ export class ThreeCityWorld {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     this.renderer.domElement.id = 'three-canvas';
-    this.renderer.domElement.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;';
+    this.renderer.domElement.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;';
     this.container.appendChild(this.renderer.domElement);
 
     window.addEventListener('resize', this.onResize);

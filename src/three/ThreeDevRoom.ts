@@ -67,7 +67,7 @@ export class ThreeDevRoom {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     this.renderer.domElement.id = 'devroom-three-canvas';
-    this.renderer.domElement.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;';
+    this.renderer.domElement.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;z-index:2;';
     this.container.appendChild(this.renderer.domElement);
 
     // Warm Ambient Light
