@@ -1,0 +1,43 @@
+{
+  "player": {
+    "name": "Designer",
+    "title": "Access Architect",
+    "avatarConfig": {
+      "shirt": "#2a9d8f",
+      "skin": "#f5c079"
+    }
+  },
+  "currentScene": "OpeningScene",
+  "currentCharacterId": null,
+  "currentDistrictId": "medicity",
+  "currentDifficulty": "easy",
+  "totalScore": 0,
+  "totalXp": 0,
+  "designCredits": 100,
+  "skills": {
+    "visual": 0,
+    "motor": 0,
+    "cognitive": 0,
+    "auditory": 0,
+    "speech": 0,
+    "screen-reader": 0,
+    "language": 0,
+    "keyboard": 0
+  },
+  "completedChallengeIds": [],
+  "unlockedLocations": [
+    "medicity"
+  ],
+  "unlockedBadgeIds": [],
+  "purchasedToolIds": [],
+  "websiteImprovements": {
+    "semanticLabels": false,
+    "captions": false,
+    "colorIndependentIndicators": false,
+    "largerTargets": false,
+    "simplifiedLayout": false,
+    "readableTypography": false,
+    "keyboardAlternative": false
+  },
+  "isGameComplete": false
+}

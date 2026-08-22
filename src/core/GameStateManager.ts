@@ -2,6 +2,7 @@ import { GameState, DifficultyLevel, AccessibilityCategory } from '../types/game
 import { eventBus, GameEvents } from './EventBus';
 import { challengeRegistry } from '../data/ChallengeRegistry';
 import localforage from 'localforage';
+import { getAuthToken } from './SupabaseClient';
 
 // Configure localforage store
 localforage.config({
@@ -242,20 +243,31 @@ export class GameStateManager {
 
     // Backend sync (asynchronous, non-blocking)
     const username = this.state.player?.name || 'Designer';
-    fetch(`/api/state/${encodeURIComponent(username)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(this.state)
-    }).catch(err => {
-      console.warn('Backend sync failed:', err);
-    });
+    getAuthToken().then(token => {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      fetch(`/api/state/${encodeURIComponent(username)}`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(this.state)
+      }).catch(err => {
+        console.warn('Backend sync failed:', err);
+      });
+    }).catch(() => {});
   }
 
   public async loadProgress(): Promise<boolean> {
     // Try to load from backend first
     try {
       const username = this.state.player?.name || 'Designer';
-      const response = await fetch(`/api/state/${encodeURIComponent(username)}`);
+      const token = await getAuthToken();
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(`/api/state/${encodeURIComponent(username)}`, { headers });
       if (response.ok) {
         const saved = await response.json();
         if (saved) {

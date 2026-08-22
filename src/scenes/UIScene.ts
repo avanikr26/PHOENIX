@@ -6,6 +6,7 @@ import { challengeManager } from '../gameplay/ChallengeManager';
 import { gameStateManager } from '../core/GameStateManager';
 import { Challenge, DialogueNode } from '../types/game';
 import { PortraitAssets, CharacterMood } from '../ui/PortraitAssets';
+import { getAuthToken } from '../core/SupabaseClient';
 
 export class UIScene extends Phaser.Scene {
   private overlay!: HTMLDivElement;
@@ -2190,34 +2191,40 @@ export class UIScene extends Phaser.Scene {
     const badgeCount = gameStateManager.getState().unlockedBadgeIds.length;
 
     // Submit score to Express backend
-    fetch('/api/leaderboard', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: username, score, badgeCount })
-    })
-      .catch(err => console.warn('Leaderboard save failed:', err))
-      .finally(() => {
-        // Fetch fresh leaderboard entries
-        fetch('/api/leaderboard')
-          .then(res => res.json())
-          .then(data => {
-            const listEl = document.getElementById('leaderboard-list');
-            if (listEl && Array.isArray(data)) {
-              listEl.innerHTML = data.map((entry, idx) => `
-                <div style="display:flex; justify-content:space-between; align-items:center; color:${entry.name === username ? '#fbbf24' : '#e2e8f0'}; font-weight:${entry.name === username ? '700' : '500'}; font-size:12px;">
-                  <span>${idx + 1}. ${entry.name}</span>
-                  <span style="font-family:var(--font-pixel); font-size:9px; color:${entry.name === username ? '#fbbf24' : '#94a3b8'};">★ ${entry.score} pts (${entry.badgeCount} 🏆)</span>
-                </div>
-              `).slice(0, 5).join(''); // Show top 5
-            }
-          })
-          .catch(() => {
-            const listEl = document.getElementById('leaderboard-list');
-            if (listEl) {
-              listEl.innerHTML = '<div style="text-align:center; color:#ef4444; font-size:11px;">Leaderboard offline.</div>';
-            }
-          });
-      });
+    getAuthToken().then(token => {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      fetch('/api/leaderboard', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name: username, score, badgeCount })
+      })
+        .catch(err => console.warn('Leaderboard save failed:', err))
+        .finally(() => {
+          // Fetch fresh leaderboard entries
+          fetch('/api/leaderboard')
+            .then(res => res.json())
+            .then(data => {
+              const listEl = document.getElementById('leaderboard-list');
+              if (listEl && Array.isArray(data)) {
+                listEl.innerHTML = data.map((entry, idx) => `
+                  <div style="display:flex; justify-content:space-between; align-items:center; color:${entry.name === username ? '#fbbf24' : '#e2e8f0'}; font-weight:${entry.name === username ? '700' : '500'}; font-size:12px;">
+                    <span>${idx + 1}. ${entry.name}</span>
+                    <span style="font-family:var(--font-pixel); font-size:9px; color:${entry.name === username ? '#fbbf24' : '#94a3b8'};">★ ${entry.score} pts (${entry.badgeCount} 🏆)</span>
+                  </div>
+                `).slice(0, 5).join(''); // Show top 5
+              }
+            })
+            .catch(() => {
+              const listEl = document.getElementById('leaderboard-list');
+              if (listEl) {
+                listEl.innerHTML = '<div style="text-align:center; color:#ef4444; font-size:11px;">Leaderboard offline.</div>';
+              }
+            });
+        });
+    }).catch(() => {});
 
     overlay.querySelector('#end-restart-btn')?.addEventListener('click', () => {
       (window as any).audioService?.playSelect?.();
