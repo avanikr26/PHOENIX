@@ -2131,6 +2131,8 @@ export class UIScene extends Phaser.Scene {
       </div>
     `;
 
+    const timeoutContentHtml = timeoutContent; // just a copy for safety
+
     overlay.innerHTML = `
       <div style="
         background: #1e293b;
@@ -2143,7 +2145,28 @@ export class UIScene extends Phaser.Scene {
         box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 40px ${isWin ? 'rgba(251,191,36,0.1)' : 'rgba(239,68,68,0.1)'};
         animation: scaleUpEnd 0.5s 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) both;
       ">
-        ${isWin ? winContent : timeoutContent}
+        ${isWin ? winContent : timeoutContentHtml}
+
+        <!-- Leaderboard section -->
+        <div id="leaderboard-section" style="
+          margin: -8px auto 24px auto;
+          font-size: 13px;
+          text-align: left;
+          background: #0f172a;
+          padding: 16px;
+          border-radius: 8px;
+          border: 1px solid #334155;
+          max-width: 440px;
+          width: 100%;
+          box-sizing: border-box;
+        ">
+          <div style="font-family: var(--font-pixel); font-size: 10px; color: #fbbf24; margin-bottom: 10px; text-align: center; letter-spacing: 1px;">
+            🏆 GLOBAL LEADERBOARD
+          </div>
+          <div id="leaderboard-list" style="display:flex; flex-direction:column; gap:8px;">
+            <div style="text-align:center; color:#94a3b8; font-size:11px;">Loading top scores...</div>
+          </div>
+        </div>
 
         <button id="end-restart-btn" style="
           background: ${isWin ? '#fbbf24' : '#ef4444'};
@@ -2162,6 +2185,39 @@ export class UIScene extends Phaser.Scene {
     `;
 
     root.appendChild(overlay);
+
+    const username = gameStateManager.getState().player.name || 'Designer';
+    const badgeCount = gameStateManager.getState().unlockedBadgeIds.length;
+
+    // Submit score to Express backend
+    fetch('/api/leaderboard', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: username, score, badgeCount })
+    })
+      .catch(err => console.warn('Leaderboard save failed:', err))
+      .finally(() => {
+        // Fetch fresh leaderboard entries
+        fetch('/api/leaderboard')
+          .then(res => res.json())
+          .then(data => {
+            const listEl = document.getElementById('leaderboard-list');
+            if (listEl && Array.isArray(data)) {
+              listEl.innerHTML = data.map((entry, idx) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; color:${entry.name === username ? '#fbbf24' : '#e2e8f0'}; font-weight:${entry.name === username ? '700' : '500'}; font-size:12px;">
+                  <span>${idx + 1}. ${entry.name}</span>
+                  <span style="font-family:var(--font-pixel); font-size:9px; color:${entry.name === username ? '#fbbf24' : '#94a3b8'};">★ ${entry.score} pts (${entry.badgeCount} 🏆)</span>
+                </div>
+              `).slice(0, 5).join(''); // Show top 5
+            }
+          })
+          .catch(() => {
+            const listEl = document.getElementById('leaderboard-list');
+            if (listEl) {
+              listEl.innerHTML = '<div style="text-align:center; color:#ef4444; font-size:11px;">Leaderboard offline.</div>';
+            }
+          });
+      });
 
     overlay.querySelector('#end-restart-btn')?.addEventListener('click', () => {
       (window as any).audioService?.playSelect?.();

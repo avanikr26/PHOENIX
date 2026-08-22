@@ -239,14 +239,41 @@ export class GameStateManager {
       // localStorage fallback
       try { localStorage.setItem(SAVE_KEY, JSON.stringify(this.state)); } catch { /* ignore */ }
     }
+
+    // Backend sync (asynchronous, non-blocking)
+    const username = this.state.player?.name || 'Designer';
+    fetch(`/api/state/${encodeURIComponent(username)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(this.state)
+    }).catch(err => {
+      console.warn('Backend sync failed:', err);
+    });
   }
 
   public async loadProgress(): Promise<boolean> {
+    // Try to load from backend first
+    try {
+      const username = this.state.player?.name || 'Designer';
+      const response = await fetch(`/api/state/${encodeURIComponent(username)}`);
+      if (response.ok) {
+        const saved = await response.json();
+        if (saved) {
+          this.state = { ...this.getInitialState(), ...saved };
+          eventBus.emit(GameEvents.STATE_UPDATED, this.getState());
+          return true;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load from backend, falling back to local storage', err);
+    }
+
+    // Local fallback
     try {
       const saved = await localforage.getItem<GameState>(SAVE_KEY);
       if (saved) {
         this.state = { ...this.getInitialState(), ...saved };
-        this.notifyStateUpdate();
+        eventBus.emit(GameEvents.STATE_UPDATED, this.getState());
         return true;
       }
     } catch {
@@ -254,7 +281,7 @@ export class GameStateManager {
         const raw = localStorage.getItem(SAVE_KEY);
         if (raw) {
           this.state = { ...this.getInitialState(), ...JSON.parse(raw) };
-          this.notifyStateUpdate();
+          eventBus.emit(GameEvents.STATE_UPDATED, this.getState());
           return true;
         }
       } catch { /* ignore */ }
